@@ -4,13 +4,20 @@ Run:  python app.py
 Open: http://localhost:5000
 """
 
-import cv2, time, threading, os, sys, webbrowser
+import time, threading, os, sys
 from flask import Flask, render_template, Response, request, jsonify, session, redirect, url_for
 from flask_socketio import SocketIO, emit
 from session import Session
-from detector import FocusDetector
 from logger import SessionLogger
 from auth import register, login as auth_login
+
+# Detector only works locally (needs webcam + OpenCV)
+try:
+    from detector import FocusDetector
+    DETECTOR_AVAILABLE = True
+except ImportError:
+    DETECTOR_AVAILABLE = False
+    print("[HocusFocus] Running in web-only mode (no webcam detection)")
 
 USE_SHEETS = False
 
@@ -134,10 +141,15 @@ def api_start():
             return jsonify({"error": "Session already running"}), 400
         data    = request.json or {}
         _session  = Session(task=data.get("task","Work session"), mode=data.get("mode","screen"), planned_minutes=int(data.get("planned",60)))
-        _detector = FocusDetector(session=_session, socketio=socketio)
+        if DETECTOR_AVAILABLE:
+            _detector = FocusDetector(session=_session, socketio=socketio)
+            _thread = threading.Thread(target=_run, daemon=True)
+            _thread.start()
         _active   = True
-    _thread = threading.Thread(target=_run, daemon=True)
-    _thread.start()
+    if not DETECTOR_AVAILABLE:
+        # Web mode: start a simple timer thread that emits stats
+        _thread = threading.Thread(target=_run_web, daemon=True)
+        _thread.start()
     return jsonify({"status": "started"})
 
 @app.route("/api/stop", methods=["POST"])
@@ -187,6 +199,8 @@ def _frames():
 
 @app.route("/video_feed")
 def video_feed():
+    if not DETECTOR_AVAILABLE:
+        return "", 204
     return Response(_frames(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
@@ -194,12 +208,45 @@ def video_feed():
 def _run():
     global _active
     try:
-        _detector.run_loop(lambda: _active)
+        if _detector:
+            _detector.run_loop(lambda: _active)
+        else:
+            # Web-only mode: just tick the session timer
+            while _active:
+                _session.tick(face_present=True, phone_present=False)
+                time.sleep(0.5)
+                now = time.time()
+                s = _session.summary()
+                s.update({"face_present": True, "face_full": True,
+                          "phone_present": False, "fingers": 0,
+                          "on_break": _session.is_on_break(),
+                          "break_remaining": round(_session.break_remaining(), 1)})
+                socketio.emit("stats_update", s)
+                time.sleep(0.25)
     except Exception as e:
         print(f"[Detector] {e}")
     finally:
         _active = False
         if _session: socketio.emit("session_ended", _session.summary())
+
+def _run_web():
+    """Web mode — no webcam, just emit timer stats every second."""
+    global _active
+    import time as _time
+    while _active:
+        _time.sleep(0.5)
+        if _session and _active:
+            _session.tick(face_present=True, phone_present=False)
+            s = _session.summary()
+            s.update({
+                "face_present": True, "face_full": True,
+                "phone_present": False, "fingers": 0,
+                "on_break": _session.is_on_break(),
+                "break_remaining": round(_session.break_remaining(), 1),
+            })
+            socketio.emit("stats_update", s)
+    if _session:
+        socketio.emit("session_ended", _session.summary())
 
 @socketio.on("connect")
 def on_connect():
@@ -210,11 +257,6 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     is_local = port == 5000
     print(f"\n🌸  HocusFocus  →  http://localhost:{port}\n")
-    if is_local:
-        import threading as _t
-        def _open():
-            import time as _time
-            _time.sleep(2)
-            webbrowser.open(f"http://localhost:{port}")
-        _t.Thread(target=_open, daemon=True).start()
+
     socketio.run(app, host="0.0.0.0", port=port, debug=False, allow_unsafe_werkzeug=True)
+
