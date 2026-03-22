@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HocusFocus — Sign in</title>
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+<link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#fdf8f2;--warm1:#f9f1e7;--warm2:#f3e8d8;--warm3:#e8d9c4;
+  --border:rgba(160,120,80,.12);--border2:rgba(160,120,80,.25);
+  --text:#2d2318;--text2:#7a6455;--text3:#b8a898;
+  --rose:#e8827a;--rose2:#d96b62;--rose-dim2:rgba(232,130,122,.18);
+  --lav:#9b8ec4;--lav2:#8070b0;--lav-dim2:rgba(155,142,196,.2);
+  --sage:#7aab8e;--sage2:#5e9474;
+  --serif:'Fraunces',Georgia,serif;--sans:'Nunito',sans-serif
+}
+html,body{height:100%}
+body{background:var(--cream);color:var(--text);font-family:var(--sans);font-size:15px;display:flex;flex-direction:column;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(160,120,80,.055) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:0}
+
+/* blobs */
+.blob1,.blob2{position:fixed;border-radius:50%;filter:blur(70px);pointer-events:none;z-index:0}
+.blob1{width:500px;height:500px;background:var(--rose);opacity:.13;top:-150px;left:-150px}
+.blob2{width:400px;height:400px;background:var(--lav);opacity:.15;bottom:-100px;right:-100px}
+
+nav{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:0 3rem;height:66px;background:rgba(253,248,242,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:20px;font-weight:600;color:var(--text);text-decoration:none}
+33%{border-radius:55% 45% 40% 60%/40% 60% 45% 55%}66%{border-radius:45% 55% 60% 40%/60% 45% 55% 40%}}
+
+.page{flex:1;display:flex;align-items:center;justify-content:center;padding:3rem 1.5rem;position:relative;z-index:1}
+
+.card{background:var(--warm1);border:1px solid var(--border);border-radius:24px;padding:2.5rem 2.5rem 3rem;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(160,100,60,.08)}
+
+.card-eyebrow{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--rose);margin-bottom:.5rem}
+.card h1{font-family:var(--serif);font-size:2rem;font-weight:500;color:var(--text);margin-bottom:.4rem;line-height:1.2}
+.card h1 em{font-style:italic;color:var(--rose)}
+.card-sub{font-size:13.5px;color:var(--text2);margin-bottom:2rem;line-height:1.6}
+
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
+.field label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+.field input{background:var(--cream);border:1.5px solid var(--border2);border-radius:12px;padding:12px 16px;font-family:var(--sans);font-size:14px;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
+.field input:focus{border-color:var(--rose);box-shadow:0 0 0 3px rgba(232,130,122,.12)}
+.field input::placeholder{color:var(--text3)}
+
+.btn-submit{width:100%;background:var(--rose);color:#fff;border:none;border-radius:12px;padding:13px;font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;margin-top:.5rem;box-shadow:0 4px 16px rgba(232,130,122,.35);transition:background .2s,transform .15s}
+.btn-submit:hover{background:var(--rose2);transform:translateY(-1px)}
+.btn-submit:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+.error-msg{background:rgba(232,130,122,.12);border:1px solid rgba(232,130,122,.3);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--rose2);margin-bottom:1rem;display:none}
+.error-msg.visible{display:block}
+
+.divider{display:flex;align-items:center;gap:12px;margin:1.5rem 0;color:var(--text3);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.switch-link{text-align:center;font-size:13.5px;color:var(--text2)}
+.switch-link a{color:var(--rose);font-weight:600;text-decoration:none;transition:color .2s}
+.switch-link a:hover{color:var(--rose2)}
+
+footer{position:relative;z-index:1;background:var(--warm2);border-top:1px solid var(--border);padding:1.5rem 3rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+.footer-logo{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--text)}
+.footer-credit{font-size:12px;color:var(--text3);font-style:italic}
+.logo-blob{width:28px;height:28px;background:linear-gradient(135deg,var(--rose),var(--lav));border-radius:40% 60% 55% 45%/50% 40% 60% 50%;animation:morph 6s ease-in-out infinite;flex-shrink:0}
+@keyframes morph{0%,100%{border-radius:40% 60% 55% 45%/50% 40% 60% 50%}33%{border-radius:55% 45% 40% 60%/40% 60% 45% 55%}66%{border-radius:45% 55% 60% 40%/60% 45% 55% 40%}}
+</style>
+</head>
+<body>
+<div class="blob1"></div><div class="blob2"></div>
+
+<nav>
+  <a href="/" class="nav-logo"><div class="logo-blob"></div>HocusFocus</a>
+</nav>
+
+<div class="page">
+  <div class="card">
+    <div class="card-eyebrow">Welcome back</div>
+    <h1>Sign <em>in</em></h1>
+    <p class="card-sub">Track your real productive time. No bias, no self-reporting.</p>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Your password" autocomplete="current-password">
+    </div>
+
+    <button class="btn-submit" id="btnSubmit" onclick="doLogin()">Sign in</button>
+
+    <div class="divider">or</div>
+    <div class="switch-link">Don't have an account? <a href="/signup">Sign up free</a></div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">HocusFocus</div>
+  <div class="footer-credit">Built with OpenCV · MediaPipe · Python &nbsp;|&nbsp; by Ridhima Kamat</div>
+</footer>
+
+<script>
+document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+async function doLogin() {
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn      = document.getElementById('btnSubmit');
+  const err      = document.getElementById('errorMsg');
+
+  if (!email || !password) { showError('Please fill in all fields.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+  err.classList.remove('visible');
+
+  const res  = await fetch('/api/login', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({email, password})
+  });
+  const data = await res.json();
+
+  if (data.error) {
+    showError(data.error);
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
+    return;
+  }
+  window.location.href = '/tracker';
+}
+
+function showError(msg) {
+  const err = document.getElementById('errorMsg');
+  err.textContent = msg;
+  err.classList.add('visible');
+}
+</script>
+</body>
+</html>

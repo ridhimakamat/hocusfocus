@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HocusFocus — Work Smarter, Effortlessly</title>
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+<link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#fdf8f2;--warm1:#f9f1e7;--warm2:#f3e8d8;--warm3:#e8d9c4;
+  --border:rgba(160,120,80,.12);--border2:rgba(160,120,80,.22);
+  --text:#2d2318;--text2:#7a6455;--text3:#b8a898;
+  --rose:#e8827a;--rose2:#d96b62;--rose-dim2:rgba(232,130,122,.18);
+  --lav:#9b8ec4;--lav2:#8070b0;--lav-dim2:rgba(155,142,196,.2);
+  --sage:#7aab8e;--sage2:#5e9474;--sage-dim2:rgba(122,171,142,.2);
+  --peach:#f0a882;--peach2:#e08e64;--peach-dim:rgba(240,168,130,.15);
+  --sky:#7ab3d4;--sky-dim:rgba(122,179,212,.14);
+  --serif:'Fraunces',Georgia,serif;--sans:'Nunito',sans-serif
+}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.7;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(160,120,80,.055) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:0}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:66px;background:rgba(253,248,242,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:20px;font-weight:600;color:var(--text);text-decoration:none}
+33%{border-radius:55% 45% 40% 60%/40% 60% 45% 55%}66%{border-radius:45% 55% 60% 40%/60% 45% 55% 40%}}
+.nav-links{display:flex;align-items:center;gap:1.4rem;list-style:none;text-decoration:none;flex-wrap:nowrap}
+nav-right{display:flex;align-items:center;gap:1.6rem}
+.nav-link{color:var(--text2);text-decoration:none;font-size:13.5px;font-weight:500;transition:color .2s;white-space:nowrap}
+.nav-link:hover{color:var(--text)}
+.nav-links a{color:var(--text2);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s;white-space:nowrap}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{background:var(--rose)!important;color:#fff!important;padding:8px 22px;border-radius:100px;font-weight:600!important;font-size:14px!important;box-shadow:0 2px 12px rgba(232,130,122,.3);transition:background .2s!important}
+.nav-cta:hover{background:var(--rose2)!important}
+
+/* HERO */
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:130px 2rem 5rem;z-index:1;overflow:hidden}
+.blob1,.blob2,.blob3{position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none}
+.blob1{width:420px;height:420px;background:var(--rose);opacity:.16;top:-80px;left:-120px}
+.blob2{width:360px;height:360px;background:var(--lav);opacity:.18;top:5%;right:-100px}
+.blob3{width:280px;height:280px;background:var(--peach);opacity:.2;bottom:10%;left:15%}
+h1{font-family:var(--serif);font-size:clamp(2.8rem,6.5vw,5rem);font-weight:500;line-height:1.1;letter-spacing:-.02em;margin-bottom:1.5rem;max-width:820px;color:var(--text)}
+h1 em{font-style:italic;color:var(--rose)}
+.hero-sub{font-size:1.1rem;color:var(--text2);max-width:520px;line-height:1.8;margin-bottom:3rem;font-weight:400}
+.hero-actions{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;justify-content:center}
+.btn-primary{background:var(--rose);color:#fff;padding:14px 34px;border-radius:100px;border:none;font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 4px 18px rgba(232,130,122,.35)}
+.btn-primary:hover{background:var(--rose2);transform:translateY(-2px);box-shadow:0 6px 24px rgba(232,130,122,.45)}
+.btn-ghost{background:transparent;color:var(--text2);padding:13px 30px;border-radius:100px;border:1.5px solid var(--border2);font-family:var(--sans);font-size:15px;font-weight:500;cursor:pointer;text-decoration:none;transition:border-color .2s,color .2s}
+.btn-ghost:hover{border-color:var(--rose);color:var(--rose)}
+
+/* SECTIONS */
+section{position:relative;z-index:1;padding:6rem 2rem;max-width:1080px;margin:0 auto}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--rose);margin-bottom:.75rem}
+h2{font-family:var(--serif);font-size:clamp(2rem,3.5vw,2.8rem);font-weight:500;line-height:1.2;letter-spacing:-.02em;margin-bottom:1rem;color:var(--text)}
+h2 em{font-style:italic;color:var(--rose)}
+.sec-desc{color:var(--text2);font-size:1.05rem;max-width:480px;line-height:1.8;font-weight:400;margin-bottom:3.5rem}
+
+/* HOW IT WORKS */
+.how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.how-card{background:var(--warm1);border:1px solid var(--border);border-radius:20px;padding:2rem 1.5rem 2.25rem;transition:transform .2s,box-shadow .2s}
+.how-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(160,100,60,.1)}
+.how-num{font-family:var(--serif);font-size:.8rem;font-weight:500;color:var(--text3);margin-bottom:1.25rem}
+.how-emoji{font-size:2rem;margin-bottom:1rem;display:block;line-height:1}
+.how-title{font-family:var(--serif);font-size:1.15rem;font-weight:500;color:var(--text);margin-bottom:.5rem;line-height:1.3}
+.how-desc{font-size:13.5px;color:var(--text2);line-height:1.65}
+
+/* FEATURES */
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.feat{background:var(--warm1);border:1px solid var(--border);border-radius:20px;padding:2rem 2rem 2.5rem;transition:transform .2s,box-shadow .2s}
+.feat:hover{transform:translateY(-3px);box-shadow:0 6px 28px rgba(160,100,60,.1)}
+.feat.wide{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;align-items:center}
+.feat-tag{display:inline-block;padding:4px 12px;border-radius:100px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:1.25rem}
+.ft-rose{background:var(--rose-dim2);color:var(--rose2)}
+.ft-lav{background:var(--lav-dim2);color:var(--lav2)}
+.ft-sage{background:var(--sage-dim2);color:var(--sage2)}
+.ft-peach{background:var(--peach-dim);color:var(--peach2)}
+.ft-sky{background:var(--sky-dim);color:var(--sky)}
+.feat-icon{font-size:2.2rem;margin-bottom:1rem;display:block}
+.feat h3{font-family:var(--serif);font-size:1.3rem;font-weight:500;color:var(--text);margin-bottom:.6rem;line-height:1.3}
+.feat p{font-size:14px;color:var(--text2);line-height:1.75}
+.mini-dash{background:var(--cream);border:1px solid var(--border);border-radius:16px;padding:1.4rem}
+.md-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.md-row:last-child{border-bottom:none;padding-top:14px}
+.md-l{color:var(--text2)}
+.md-l.bold{color:var(--text);font-weight:600}
+.md-v{font-family:var(--serif);font-weight:500;font-size:14px}
+.md-v.rose{color:var(--rose)}
+.md-v.sage{color:var(--sage2)}
+.md-v.peach{color:var(--peach2)}
+.md-v.big{font-size:1.4rem}
+
+/* DASHBOARD PREVIEW */
+.dash-preview{background:var(--warm1);border:1px solid var(--border);border-radius:24px;overflow:hidden;margin-top:2rem;box-shadow:0 8px 40px rgba(160,100,60,.08)}
+.dash-bar{background:var(--warm2);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;gap:7px}
+.dc{width:11px;height:11px;border-radius:50%}
+.dc-r{background:#f4937a}.dc-y{background:#f5c77e}.dc-g{background:#7acf9e}
+.dash-title{font-size:12px;color:var(--text3);font-weight:500;flex:1;text-align:center}
+.dash-body{padding:1.75rem;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.dm{background:var(--cream);border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem 1.25rem}
+.dm-lbl{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.dm-val{font-family:var(--serif);font-size:1.75rem;font-weight:500;line-height:1.1}
+.dm-val.rose{color:var(--rose)}.dm-val.sage{color:var(--sage2)}.dm-val.peach{color:var(--peach2)}.dm-val.lav{color:var(--lav)}
+.dm-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.d-chart{grid-column:1/-1;background:var(--cream);border:1px solid var(--border);border-radius:14px;padding:1.25rem}
+.chart-lbl{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
+.bar-row{display:flex;align-items:flex-end;gap:10px;height:90px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
+.bars{display:flex;gap:3px;align-items:flex-end;width:100%;height:76px}
+.b{flex:1;border-radius:5px 5px 0 0;min-height:6px}
+.b.pl{background:var(--warm3)}.b.ef{background:linear-gradient(180deg,var(--rose),var(--peach))}
+.bar-lbl{font-size:10px;color:var(--text3);font-weight:500}
+.d-log{grid-column:1/-1;background:var(--cream);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.log-r{display:grid;grid-template-columns:2.5fr 1fr 1fr 1fr;padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;align-items:center}
+.log-r:last-child{border-bottom:none}
+.log-r.hd{background:var(--warm2);font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase}
+.log-task{color:var(--text);font-weight:500}
+.log-n{color:var(--text2);font-family:var(--serif)}
+.log-n.rose{color:var(--rose);font-weight:500}.log-n.sage{color:var(--sage2);font-weight:500}
+.mbadge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:600}
+.mbadge.s{background:var(--sky-dim);color:var(--sky)}.mbadge.o{background:var(--sage-dim2);color:var(--sage2)}
+
+/* GESTURE */
+.gesture-wrap{display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center;margin-top:2rem}
+.gesture-viz{background:var(--warm1);border:1px solid var(--border);border-radius:24px;padding:3rem 2rem;display:flex;flex-direction:column;align-items:center;gap:1.25rem}
+.hand-display{font-size:4.5rem;line-height:1;transition:transform .3s ease,opacity .3s ease}
+.finger-badge{background:linear-gradient(135deg,var(--rose-dim2),var(--lav-dim2));border:1px solid rgba(232,130,122,.25);border-radius:100px;padding:10px 26px;font-family:var(--serif);font-size:1.05rem;font-weight:500;color:var(--rose2);text-align:center}
+.gesture-cap{font-size:12px;color:var(--text3);font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+.gesture-explainer p{font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:1.25rem}
+.gesture-explainer p strong{color:var(--text);font-weight:600}
+
+/* CTA */
+.cta-section{background:linear-gradient(135deg,var(--warm2),var(--warm1));border-top:1px solid var(--border);padding:7rem 2rem;text-align:center;position:relative;z-index:1;overflow:hidden}
+.cta-b1,.cta-b2{position:absolute;border-radius:50%;filter:blur(50px);pointer-events:none}
+.cta-b1{width:350px;height:350px;background:var(--rose);opacity:.11;top:-100px;left:-80px}
+.cta-b2{width:280px;height:280px;background:var(--lav);opacity:.13;bottom:-60px;right:-50px}
+.cta-section h2{margin-bottom:1rem;position:relative}
+.cta-section p{color:var(--text2);font-size:1.05rem;margin-bottom:2.5rem;position:relative}
+
+/* FOOTER */
+footer{background:var(--warm2);border-top:1px solid var(--border);padding:2.5rem 3rem;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;flex-wrap:wrap;gap:1rem}
+.footer-logo{font-family:var(--serif);font-size:17px;font-weight:500;color:var(--text)}
+.footer-tag{font-size:13px;color:var(--text3)}
+.footer-credit{font-size:13px;color:var(--text3);font-style:italic}
+
+.soft-div{border:none;border-top:1px solid var(--border);max-width:1080px;margin:0 auto}
+.fade-in{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){
+  nav{padding:0 1.5rem}.nav-links{display:none}
+  .hero{padding:110px 1.5rem 4rem}
+  section{padding:4rem 1.5rem}
+  .how-grid{grid-template-columns:1fr 1fr}
+  .feat-grid{grid-template-columns:1fr}.feat.wide{grid-template-columns:1fr}
+  .dash-body{grid-template-columns:1fr 1fr}
+  .log-r{grid-template-columns:2fr 1fr 1fr}.log-r>:last-child{display:none}
+  .gesture-wrap{grid-template-columns:1fr}
+  footer{flex-direction:column;align-items:flex-start}
+}
+.logo-blob{width:28px;height:28px;background:linear-gradient(135deg,var(--rose),var(--lav));border-radius:40% 60% 55% 45%/50% 40% 60% 50%;animation:morph 6s ease-in-out infinite;flex-shrink:0}
+@keyframes morph{0%,100%{border-radius:40% 60% 55% 45%/50% 40% 60% 50%}33%{border-radius:55% 45% 40% 60%/40% 60% 45% 55%}66%{border-radius:45% 55% 60% 40%/60% 45% 55% 40%}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><div class="logo-blob"></div>HocusFocus</a>
+  <nav-right>
+    <a href="#how" class="nav-link">How it works</a>
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#gesture" class="nav-link">Gesture breaks</a>
+    <a href="#dashboard" class="nav-link">Dashboard</a>
+    {% if user %}
+      <span class="nav-link" style="color:var(--text2)">Hi, {{ user.name.split()[0] }} 👋</span>
+      <a href="/tracker" class="nav-cta">Open tracker</a>
+      <a href="/logout" class="nav-link" style="color:var(--text3)">Sign out</a>
+    {% else %}
+      <a href="/login" class="nav-link">Sign in</a>
+      <a href="/signup" class="nav-cta">Sign up free</a>
+    {% endif %}
+  </nav-right>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="blob1"></div><div class="blob2"></div><div class="blob3"></div>
+  <h1>Your camera sees<br>what you <em>actually</em> get done</h1>
+  <p class="hero-sub">HocusFocus measures your real productive time — not your intentions. Your webcam quietly tracks presence, breaks, and distractions so you always know where your day really went.</p>
+  <div class="hero-actions">
+    {% if user %}
+      <a href="/tracker" class="btn-primary">
+        Open HocusFocus
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    {% else %}
+      <a href="/signup" class="btn-primary">
+        Start using HocusFocus
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    {% endif %}
+    <a href="#features" class="btn-ghost">Explore features</a>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="fade-in">
+    <div class="eyebrow">How it works</div>
+    <h2>Effortless tracking,<br>from day one</h2>
+    <p class="sec-desc">No forms to fill. No ratings to give. Just open HocusFocus, start working, and let it do the rest.</p>
+  </div>
+  <div class="how-grid fade-in">
+    <div class="how-card"><div class="how-num">Step 01</div><span class="how-emoji"></span><div class="how-title">Name your task</div><div class="how-desc">Type what you're working on and choose screen or offline mode. That's the only input HocusFocus ever needs from you.</div></div>
+    <div class="how-card"><div class="how-num">Step 02</div><span class="how-emoji"></span><div class="how-title">Webcam monitors quietly</div><div class="how-desc">HocusFocus watches your presence in the background. No data leaves your device — completely private, always local.</div></div>
+    <div class="how-card"><div class="how-num">Step 03</div><span class="how-emoji"></span><div class="how-title">Gesture your breaks</div><div class="how-desc">Hold up fingers to take a break — the number you show becomes the minutes you get. No buttons, no timers to set.</div></div>
+    <div class="how-card"><div class="how-num">Step 04</div><span class="how-emoji"></span><div class="how-title">See your real numbers</div><div class="how-desc">At session end, discover your true effective time, what cost you focus, and how your productivity trends over weeks.</div></div>
+  </div>
+</section>
+
+<hr class="soft-div">
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="fade-in">
+    <div class="eyebrow">Features</div>
+    <h2>Everything you need<br>to work at your <em>best</em></h2>
+    <p class="sec-desc">Six thoughtfully designed systems that work together, invisibly, in the background.</p>
+  </div>
+  <div class="feat-grid fade-in">
+
+    <div class="feat wide">
+      <div>
+        <div class="feat-tag ft-rose">Core feature</div>
+        <h3>Automatic effective time</h3>
+        <p>HocusFocus calculates your true productive minutes by subtracting every absence and break from your total session time. What remains is what you actually achieved — no guesswork, no self-reporting, just honest measurement.</p>
+      </div>
+      <div class="mini-dash">
+        <div class="md-row"><span class="md-l">Session planned</span><span class="md-v">60 min</span></div>
+        <div class="md-row"><span class="md-l">Away from desk</span><span class="md-v rose">−3 min not counted</span></div>
+        <div class="md-row"><span class="md-l">Gesture break</span><span class="md-v peach">−8 min excluded</span></div>
+        <div class="md-row"><span class="md-l bold">Effective time</span><span class="md-v sage big">49 min</span></div>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div class="feat-tag ft-sage">Presence</div>
+      <h3>Absence detection</h3>
+      <p>HocusFocus knows when you step away from your desk. Absence time is excluded automatically — your effective minutes only count time you were genuinely present and focused.</p>
+    </div>
+
+    <div class="feat">
+      <div class="feat-tag ft-peach">Flexibility</div>
+      <h3>Screen and offline modes</h3>
+      <p>Whether you are coding on a laptop or reading from a textbook, choose the mode that fits. HocusFocus adapts its tracking to how you are actually working today.</p>
+    </div>
+
+    <div class="feat">
+      <div class="feat-tag ft-lav">Break system</div>
+      <h3>Gesture-triggered breaks</h3>
+      <p>Hold up fingers to the camera to take a break — the number shown becomes the break duration in minutes. No buttons, no timers to set. Breaks are logged separately and excluded from effective time.</p>
+    </div>
+
+    <div class="feat">
+      <div class="feat-tag ft-sky">Insights</div>
+      <h3>Session analytics</h3>
+      <p>Charts show your planned versus effective time, strongest focus days, break patterns, and productivity trends — generated automatically from your session history.</p>
+    </div>
+
+  </div>
+
+</section>
+
+<hr class="soft-div">
+
+<!-- GESTURE -->
+<section id="gesture">
+  <div class="fade-in">
+    <div class="eyebrow">Break system</div>
+    <h2>Your hand is the<br>only remote you need</h2>
+    <p class="sec-desc">Hold fingers up to the camera and HocusFocus automatically pauses your session — the count becomes your break in minutes. Use one hand for 1–5 minutes, both hands for 6–10 minutes.</p>
+  </div>
+  <div class="gesture-wrap fade-in">
+    <div class="gesture-viz">
+      <div class="hand-display" id="handEl"></div>
+      <div class="finger-badge" id="fingerBadge">3 fingers → 3 min break</div>
+      <span class="gesture-cap">Live gesture preview</span>
+    </div>
+    <div class="gesture-explainer">
+      <p>Simply hold your hand up to the webcam. HocusFocus reads how many fingers you're showing and immediately starts a break timer for that many minutes. When the break ends, your session resumes automatically.</p>
+      <p><strong>No keyboard. No mouse. No interruption.</strong> The break is logged separately and excluded from your effective time — so your productivity data stays honest.</p>
+      <p>Show a closed fist and HocusFocus knows you're staying focused. The gesture system is always watching, always ready, and never gets in your way.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="soft-div">
+
+<!-- DASHBOARD PREVIEW -->
+<section id="dashboard">
+  <div class="fade-in">
+    <div class="eyebrow">Session view</div>
+    <h2>A dashboard that tells<br>you the <em>truth</em></h2>
+    <p class="sec-desc">Live feedback while you work, and a growing history of how your focus evolves week by week.</p>
+  </div>
+  <div class="dash-preview fade-in">
+    <div class="dash-bar"><div class="dc dc-r"></div><div class="dc dc-y"></div><div class="dc dc-g"></div><span class="dash-title">HocusFocus — Today's sessions</span></div>
+    <div class="dash-body">
+      <div class="dm"><div class="dm-lbl">Effective time</div><div class="dm-val sage">47m</div><div class="dm-sub">of 60 planned</div></div>
+      <div class="dm"><div class="dm-lbl">Breaks taken</div><div class="dm-val peach">8m</div><div class="dm-sub">2 breaks</div></div>
+      <div class="dm"><div class="dm-lbl">Phone events</div><div class="dm-val rose">3</div><div class="dm-sub">~5 min not counted</div></div>
+      <div class="dm"><div class="dm-lbl">Focus score</div><div class="dm-val lav">78%</div><div class="dm-sub">above your avg</div></div>
+      <div class="d-chart">
+        <div class="chart-lbl">Planned vs effective — last 7 days</div>
+        <div class="bar-row">
+          <div class="bar-col"><div class="bars"><div class="b pl" style="height:70%"></div><div class="b ef" style="height:62%"></div></div><span class="bar-lbl">Mon</span></div>
+          <div class="bar-col"><div class="bars"><div class="b pl" style="height:100%"></div><div class="b ef" style="height:82%"></div></div><span class="bar-lbl">Tue</span></div>
+          <div class="bar-col"><div class="bars"><div class="b pl" style="height:85%"></div><div class="b ef" style="height:55%"></div></div><span class="bar-lbl">Wed</span></div>
+          <div class="bar-col"><div class="bars"><div class="b pl" style="height:60%"></div><div class="b ef" style="height:57%"></div></div><span class="bar-lbl">Thu</span></div>
+          <div class="bar-col"><div class="bars"><div class="b pl" style="height:90%"></div><div class="b ef" style="height:78%"></div></div><span class="bar-lbl">Fri</span></div>
+          <div class="bar-col"><div class="bars"><div class="b pl" style="height:50%"></div><div class="b ef" style="height:47%"></div></div><span class="bar-lbl">Sat</span></div>
+          <div class="bar-col"><div class="bars"><div class="b pl" style="height:75%"></div><div class="b ef" style="height:72%"></div></div><span class="bar-lbl">Sun</span></div>
+        </div>
+        <div style="display:flex;gap:18px;margin-top:12px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);font-weight:500"><div style="width:10px;height:10px;background:var(--warm3);border-radius:2px"></div>Planned</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);font-weight:500"><div style="width:10px;height:10px;background:var(--rose);border-radius:2px"></div>Effective</div>
+        </div>
+      </div>
+      <div class="d-log">
+        <div class="log-r hd"><span>Task</span><span>Mode</span><span>Planned</span><span>Effective</span></div>
+        <div class="log-r"><span class="log-task">Deep work — API</span><span><span class="mbadge s">Screen</span></span><span class="log-n">60m</span><span class="log-n sage">47m</span></div>
+        <div class="log-r"><span class="log-task">Research reading</span><span><span class="mbadge o">Offline</span></span><span class="log-n">45m</span><span class="log-n rose">31m</span></div>
+        <div class="log-r"><span class="log-task">Design review</span><span><span class="mbadge s">Screen</span></span><span class="log-n">30m</span><span class="log-n sage">29m</span></div>
+        <div class="log-r"><span class="log-task">Planning & notes</span><span><span class="mbadge o">Offline</span></span><span class="log-n">20m</span><span class="log-n rose">12m</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section fade-in">
+  <div class="cta-b1"></div><div class="cta-b2"></div>
+  <div class="eyebrow" style="text-align:center">Ready?</div>
+  <h2>Start working smarter<br>from <em>today</em></h2>
+  <p>Your data stays on your device. Always private, always yours.</p>
+  <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;justify-content:center">
+    {% if user %}
+      <a href="/tracker" class="btn-primary">Open HocusFocus <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <a href="/history" class="btn-ghost">View session history</a>
+    {% else %}
+      <a href="/signup" class="btn-primary">Create free account <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <a href="/login" class="btn-ghost">Sign in</a>
+    {% endif %}
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">HocusFocus</div>
+  <div class="footer-tag">Behavior-based · Local-first · Privacy-first</div>
+  <div class="footer-credit">Built with OpenCV · MediaPipe · Python &nbsp;|&nbsp; by Ridhima Kamat</div>
+</footer>
+
+<script>
+  const obs = new IntersectionObserver(
+    es => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible') }),
+    {threshold:.08,rootMargin:'0px 0px -30px 0px'});
+  document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+  const demos=[
+    {emoji:'☝️',label:'1 finger → 1 min break'},
+    {emoji:'✌️',label:'2 fingers → 2 min break'},
+    {emoji:'🤟',label:'3 fingers → 3 min break'},
+    {emoji:'🖖',label:'4 fingers → 4 min break'},
+    {emoji:'',label:'5 fingers → 5 min break'},
+    {emoji:'✊',label:'Fist → stay focused'},
+  ];
+  let gi=2;
+  const handEl=document.getElementById('handEl');
+  const badgeEl=document.getElementById('fingerBadge');
+  if(handEl){
+    handEl.style.transition='transform .3s ease,opacity .3s ease';
+    setInterval(()=>{
+      gi=(gi+1)%demos.length;
+      handEl.style.transform='scale(.7) rotate(-15deg)';handEl.style.opacity='0';
+      setTimeout(()=>{
+        handEl.textContent=demos[gi].emoji;badgeEl.textContent=demos[gi].label;
+        handEl.style.transform='scale(1) rotate(0deg)';handEl.style.opacity='1';
+      },300);
+    },2200);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HocusFocus — Session History</title>
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+<link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#fdf8f2;--warm1:#f9f1e7;--warm2:#f3e8d8;--warm3:#e8d9c4;
+  --border:rgba(160,120,80,.12);--border2:rgba(160,120,80,.22);
+  --text:#2d2318;--text2:#7a6455;--text3:#b8a898;
+  --rose:#e8827a;--rose2:#d96b62;--rose-dim2:rgba(232,130,122,.18);
+  --lav:#9b8ec4;--sage2:#5e9474;--peach2:#e08e64;--sage-dim2:rgba(122,171,142,.2);--sky-dim:rgba(122,179,212,.14);--sky:#7ab3d4;
+  --serif:'Fraunces',Georgia,serif;--sans:'Nunito',sans-serif
+}
+body{background:var(--cream);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(160,120,80,.04) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:0}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:60px;background:rgba(253,248,242,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:8px;font-family:var(--serif);font-size:18px;font-weight:600;color:var(--text);text-decoration:none}
+33%{border-radius:55% 45% 40% 60%/40% 60% 45% 55%}66%{border-radius:45% 55% 60% 40%/60% 45% 55% 40%}}
+.nav-right{display:flex;align-items:center;gap:1rem}
+.nav-link{color:var(--text2);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s}
+.nav-link:hover{color:var(--text)}
+.btn-new-sess{background:var(--rose);color:#fff;border:none;border-radius:100px;padding:7px 20px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;box-shadow:0 2px 10px rgba(232,130,122,.3);transition:background .2s}
+.btn-new-sess:hover{background:var(--rose2)}
+
+.page{padding:80px 2rem 3rem;max-width:1080px;margin:0 auto;position:relative;z-index:1}
+.page-header{margin-bottom:2rem}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--rose);margin-bottom:.5rem}
+h1{font-family:var(--serif);font-size:2.4rem;font-weight:500;color:var(--text);line-height:1.2}
+h1 em{font-style:italic;color:var(--rose)}
+
+/* CHARTS */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem}
+.chart-card{background:var(--warm1);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.chart-card.full{grid-column:1/-1}
+.cc-header{background:var(--warm2);border-bottom:1px solid var(--border);padding:10px 16px;font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase}
+.cc-body{padding:1rem}
+.cc-body img{width:100%;border-radius:8px;display:block}
+.cc-empty{padding:2rem;text-align:center;color:var(--text3);font-size:13px}
+
+/* TABLE */
+.table-card{background:var(--warm1);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.table-header{background:var(--warm2);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+.table-header h2{font-family:var(--serif);font-size:1.2rem;font-weight:500;color:var(--text)}
+.table-header span{font-size:12px;color:var(--text3)}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--warm2)}
+th{padding:9px 16px;text-align:left;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:11px 16px;font-size:13px;border-bottom:1px solid var(--border);color:var(--text2)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--warm2)}
+.td-task{color:var(--text);font-weight:500}
+.td-num{font-family:var(--serif);font-size:14px}
+.td-eff{color:var(--sage2);font-weight:500}
+.td-rose{color:var(--rose)}
+.td-lav{color:var(--lav)}
+.mbadge{display:inline-block;padding:2px 9px;border-radius:100px;font-size:10px;font-weight:600}
+.mbadge.s{background:var(--sky-dim);color:var(--sky)}.mbadge.o{background:var(--sage-dim2);color:var(--sage2)}
+
+.empty-state{text-align:center;padding:4rem 2rem;color:var(--text3)}
+.empty-state .es-icon{font-size:3rem;margin-bottom:1rem;opacity:.4}
+.empty-state h3{font-family:var(--serif);font-size:1.4rem;font-weight:500;color:var(--text2);margin-bottom:.5rem}
+.empty-state p{font-size:14px;margin-bottom:1.5rem}
+.btn-primary{background:var(--rose);color:#fff;border:none;border-radius:100px;padding:12px 28px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;box-shadow:0 3px 14px rgba(232,130,122,.3);transition:background .2s}
+.btn-primary:hover{background:var(--rose2)}
+.logo-blob{width:28px;height:28px;background:linear-gradient(135deg,var(--rose),var(--lav));border-radius:40% 60% 55% 45%/50% 40% 60% 50%;animation:morph 6s ease-in-out infinite;flex-shrink:0}
+@keyframes morph{0%,100%{border-radius:40% 60% 55% 45%/50% 40% 60% 50%}33%{border-radius:55% 45% 40% 60%/40% 60% 45% 55%}66%{border-radius:45% 55% 60% 40%/60% 45% 55% 40%}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><div class="logo-blob"></div>HocusFocus</a>
+  <div class="nav-right">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/tracker" class="btn-new-sess">New session</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div class="eyebrow">Your data</div>
+    <h1>Session <em>history</em></h1>
+  </div>
+
+  {% if sessions %}
+
+  <!-- CHARTS -->
+  <div class="charts-grid">
+    <div class="chart-card full">
+      <div class="cc-header">Planned vs effective time</div>
+      <div class="cc-body">
+        {% if charts_exist %}
+        <img src="/static/charts/planned_vs_effective.png" alt="Planned vs effective">
+        {% else %}
+        <div class="cc-empty">Chart will appear after your first session.</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="cc-header">Session time breakdown</div>
+      <div class="cc-body">
+        {% if charts_exist %}
+        <img src="/static/charts/time_breakdown.png" alt="Time breakdown">
+        {% else %}
+        <div class="cc-empty">Chart will appear after your first session.</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="cc-header">Focus score trend</div>
+      <div class="cc-body">
+        {% if charts_exist %}
+        <img src="/static/charts/focus_trend.png" alt="Focus trend">
+        {% else %}
+        <div class="cc-empty">Chart will appear after your first session.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-header">
+      <h2>All sessions</h2>
+      <span>{{ sessions|length }} session{{ 's' if sessions|length != 1 else '' }}</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Task</th>
+          <th>Mode</th>
+          <th>Planned</th>
+          <th>Effective</th>
+          <th>Breaks</th>
+                    <th>Focus</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sessions|reverse %}
+        <tr>
+          <td>{{ s.date }}<br><span style="font-size:11px;color:var(--text3)">{{ s.start_time }}</span></td>
+          <td class="td-task">{{ s.task }}</td>
+          <td><span class="mbadge {{ 's' if s.mode == 'screen' else 'o' }}">{{ s.mode }}</span></td>
+          <td class="td-num">{{ s.planned_minutes }} min</td>
+          <td class="td-num td-eff">{{ s.effective_minutes }} min</td>
+          <td class="td-num">{{ s.break_minutes }} min</td>
+                    <td class="td-num td-lav">{{ s.focus_score }}%</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="es-icon">📊</div>
+    <h3>No sessions yet</h3>
+    <p>Complete your first session and your history will appear here.</p>
+    <a href="/tracker" class="btn-primary">Start your first session →</a>
+  </div>
+  {% endif %}
+</div>
+
+</body>
+</html>
