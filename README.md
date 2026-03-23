@@ -52,7 +52,7 @@ Hold your hand up to the webcam with fingers extended. The number of fingers you
 [hocusfocus.up.railway.app](hocusfocus.up.railway.app)
 
 > Note: The live demo hosts the landing page, sign up, login and session history. The webcam tracker runs locally.
-
+  Note: Copy and paste link in browser to use.
 ---
 
 ## Built by
