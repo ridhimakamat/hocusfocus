@@ -57,6 +57,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .btn-quit{background:transparent;color:var(--rose);border:1.5px solid var(--rose);border-radius:10px;padding:10px 20px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:none;align-items:center;gap:6px}
 .btn-quit:hover{background:var(--rose);color:#fff}
 .btn-quit.visible{display:flex}
+/* Always visible end session button inside tracker */
+.end-session-btn{width:100%;background:transparent;color:var(--rose);border:1.5px solid var(--rose);border-radius:10px;padding:11px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:4px}
+.end-session-btn:hover{background:var(--rose);color:#fff}
 .tracker-grid{display:grid;grid-template-columns:1fr 360px;gap:1.25rem}
 .cam-card{background:var(--warm1);border:1px solid var(--border);border-radius:20px;overflow:hidden}
 .cam-toolbar{background:var(--warm2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:7px}
@@ -302,6 +305,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
         <span class="gh-icon" id="gestureIcon">✋</span>
         <div class="gh-text"><strong>Gesture breaks:</strong> hold 1–5 fingers up for 1.5 seconds — the count sets your break in minutes.</div>
       </div>
+
+      <button class="end-session-btn" onclick="openQuitModal()">✕ End session</button>
     </div>
   </div>
 
@@ -415,9 +420,11 @@ function countFingers(keypoints) {
   const kp = keypoints;
   let count = 0;
 
-  // Thumb: tip x further from palm centre than ip
+  // Thumb: tip x further from palm centre than mcp
   const palmCx = (kp[5].x + kp[17].x) / 2;
-  if (Math.abs(kp[4].x - palmCx) > Math.abs(kp[3].x - palmCx)) count++;
+  const thumbDist = Math.abs(kp[4].x - palmCx);
+  const mcpDist   = Math.abs(kp[2].x - palmCx);
+  if (thumbDist > mcpDist * 1.1) count++;
 
   // Four fingers: tip y above pip y (smaller y = higher in image)
   const pairs = [[8,6],[12,10],[16,14],[20,18]];
@@ -434,8 +441,10 @@ function handVisible(keypoints) {
   const ys = keypoints.map(k => k.y);
   const spread = (Math.max(...xs) - Math.min(...xs)) + (Math.max(...ys) - Math.min(...ys));
   const video  = document.getElementById('videoEl');
-  const norm   = spread / ((video.videoWidth + video.videoHeight) / 2);
-  return norm > 0.08;
+  const denom  = (video.videoWidth + video.videoHeight) / 2;
+  if (denom === 0) return spread > 20; // fallback if dims not ready
+  const norm   = spread / denom;
+  return norm > 0.05; // lowered threshold
 }
 
 // ── Detection loop ─────────────────────────────────────────────────────────────
@@ -727,6 +736,24 @@ async function startSession() {
 
   startCountdown(planned);
 
+  // Update metrics every second independently of detection
+  if (window._metricsInterval) clearInterval(window._metricsInterval);
+  window._metricsInterval = setInterval(() => {
+    if (!sessionActive) { clearInterval(window._metricsInterval); return; }
+    const plan  = plannedSecs / 60;
+    const eff   = effectiveSecs / 60;
+    const away  = awaySecs     / 60;
+    const brk   = breakSecs    / 60;
+    const score = plan > 0 ? Math.min((eff/plan)*100, 100) : 0;
+    document.getElementById('statEffective').textContent  = eff.toFixed(1)   + 'm';
+    document.getElementById('statScore').textContent      = score.toFixed(0) + '%';
+    document.getElementById('statBreaks').textContent     = brk.toFixed(1)   + 'm';
+    document.getElementById('statBreakCount').textContent = breakCount        + ' taken';
+    document.getElementById('statAway').textContent       = away.toFixed(1)  + 'm';
+    document.getElementById('progressLabel').textContent  = eff.toFixed(1)   + ' / ' + plan.toFixed(0) + ' min';
+    document.getElementById('progressFill').style.width   = score            + '%';
+  }, 1000);
+
   // Start detection loop
   if (modelsLoaded) {
     detectionLoop = requestAnimationFrame(runDetection);
@@ -747,9 +774,10 @@ async function _endSession(early) {
   if (!sessionActive) return;
   sessionActive = false;
 
-  if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
-  if (detectionLoop)  { cancelAnimationFrame(detectionLoop); detectionLoop = null; }
-  if (breakInterval)  { clearInterval(breakInterval); breakInterval = null; }
+  if (countdownTimer)           { clearInterval(countdownTimer); countdownTimer = null; }
+  if (detectionLoop)            { cancelAnimationFrame(detectionLoop); detectionLoop = null; }
+  if (breakInterval)            { clearInterval(breakInterval); breakInterval = null; }
+  if (window._metricsInterval) { clearInterval(window._metricsInterval); window._metricsInterval = null; }
 
   // Stop camera
   if (videoStream) {
@@ -828,3 +856,4 @@ function toggleMusic() {
 </script>
 </body>
 </html>
+    
