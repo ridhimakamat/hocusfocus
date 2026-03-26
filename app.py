@@ -20,6 +20,7 @@ except ImportError:
     print("[HocusFocus] Running in web-only mode (no webcam detection)")
 
 USE_SHEETS = False
+IS_RAILWAY = os.environ.get("RAILWAY_ENVIRONMENT") is not None
 
 def resource_path(relative):
     """Get absolute path — works for dev and PyInstaller .exe"""
@@ -73,7 +74,7 @@ def index():
 def tracker():
     if not logged_in():
         return redirect(url_for("login_page"))
-    return render_template("tracker.html", user=current_user())
+    return render_template("tracker.html", user=current_user(), is_railway=IS_RAILWAY)
 
 @app.route("/history")
 def history():
@@ -183,6 +184,22 @@ def api_status():
     s["break_remaining"] = round(_session.break_remaining(), 1)
     return jsonify(s)
 
+@app.route("/api/save_summary", methods=["POST"])
+def api_save_summary():
+    if not logged_in():
+        return jsonify({"error": "Not logged in"}), 401
+    data = request.json or {}
+    if not _session:
+        return jsonify({"error": "No session"}), 400
+    # Update session with browser-computed values
+    _session.present_seconds = data.get("effective_minutes", 0) * 60
+    _session.away_seconds    = data.get("away_minutes",     0) * 60
+    _session.break_seconds   = data.get("break_minutes",    0) * 60
+    _session.break_count     = data.get("break_count",      0)
+    summary = _session.summary()
+    SessionLogger().save(summary)
+    return jsonify({"status": "saved"})
+
 @app.route("/api/history")
 def api_history():
     return jsonify(SessionLogger().load_all())
@@ -259,4 +276,5 @@ if __name__ == "__main__":
     print(f"\n🌸  HocusFocus  →  http://localhost:{port}\n")
 
     socketio.run(app, host="0.0.0.0", port=port, debug=False, allow_unsafe_werkzeug=True)
+
 
