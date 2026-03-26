@@ -5,10 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HocusFocus — Session Tracker</title>
 <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-<link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/hand-pose-detection"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -24,17 +27,14 @@
 html,body{height:100%}
 body{background:var(--cream);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(160,120,80,.04) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:0}
-
 nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:60px;background:rgba(253,248,242,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
 .nav-logo{display:flex;align-items:center;gap:8px;font-family:var(--serif);font-size:18px;font-weight:600;color:var(--text);text-decoration:none}
-33%{border-radius:55% 45% 40% 60%/40% 60% 45% 55%}66%{border-radius:45% 55% 60% 40%/60% 45% 55% 40%}}
-.nav-right{display:flex;align-items:center;gap:1rem}
-.nav-link{color:var(--text2);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s}
-.nav-link:hover{color:var(--text)}
-
+.logo-blob{width:24px;height:24px;background:linear-gradient(135deg,var(--rose),var(--lav));border-radius:40% 60% 55% 45%/50% 40% 60% 50%;animation:morph 6s ease-in-out infinite;flex-shrink:0}
+@keyframes morph{0%,100%{border-radius:40% 60% 55% 45%/50% 40% 60% 50%}33%{border-radius:55% 45% 40% 60%/40% 60% 45% 55%}66%{border-radius:45% 55% 60% 40%/60% 45% 55% 40%}}
+.nav-right{display:flex;align-items:center;gap:1.8rem}
+.nav-right a{color:var(--text2);text-decoration:none;font-size:13.5px;font-weight:500;transition:color .2s}
+.nav-right a:hover{color:var(--text)}
 .page{padding:76px 1.5rem 2rem;max-width:1200px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;gap:1.25rem;position:relative;z-index:1}
-
-/* SETUP */
 .setup-card{background:var(--warm1);border:1px solid var(--border);border-radius:20px;padding:2rem 2.5rem}
 .setup-card h2{font-family:var(--serif);font-size:1.6rem;font-weight:500;color:var(--text);margin-bottom:1.5rem}
 .setup-form{display:grid;grid-template-columns:1fr 140px 120px auto;gap:12px;align-items:end}
@@ -50,94 +50,64 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s}
 .toggle-switch input:checked+.toggle-slider{background:var(--lav)}
 .toggle-switch input:checked+.toggle-slider::before{transform:translateX(18px)}
-
-/* BUTTONS */
 .btn-row{display:flex;gap:8px;align-items:flex-end}
 .btn-start{background:var(--rose);color:#fff;border:none;border-radius:10px;padding:11px 28px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 3px 14px rgba(232,130,122,.35);transition:background .2s,transform .15s}
 .btn-start:hover{background:var(--rose2);transform:translateY(-1px)}
 .btn-start:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-stop{background:transparent;color:var(--rose);border:1.5px solid var(--rose);border-radius:10px;padding:10px 20px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:none;align-items:center;gap:6px}
-.btn-stop:hover{background:var(--rose);color:#fff}
-.btn-stop.visible{display:flex}
-.btn-quit{background:transparent;color:var(--text3);border:1.5px solid var(--border2);border-radius:10px;padding:10px 18px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:none;align-items:center;gap:6px}
-.btn-quit:hover{border-color:var(--rose);color:var(--rose)}
+.btn-quit{background:transparent;color:var(--rose);border:1.5px solid var(--rose);border-radius:10px;padding:10px 20px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:none;align-items:center;gap:6px}
+.btn-quit:hover{background:var(--rose);color:#fff}
 .btn-quit.visible{display:flex}
-
-/* TRACKER GRID */
 .tracker-grid{display:grid;grid-template-columns:1fr 360px;gap:1.25rem}
-
-/* WEBCAM */
 .cam-card{background:var(--warm1);border:1px solid var(--border);border-radius:20px;overflow:hidden}
 .cam-toolbar{background:var(--warm2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:7px}
 .dc{width:10px;height:10px;border-radius:50%}
 .dc-r{background:#f4937a}.dc-y{background:#f5c77e}.dc-g{background:#7acf9e}
 .cam-title{font-size:12px;color:var(--text3);font-weight:500;flex:1;text-align:center}
-.cam-body{position:relative;background:#1a1410;aspect-ratio:16/9}
-.cam-body img{width:100%;height:100%;object-fit:cover;display:block}
-.cam-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:var(--text3);font-size:14px;font-weight:500}
-.cam-placeholder .ph-icon{font-size:3rem;opacity:.4}
+.cam-body{position:relative;background:#1a1410;aspect-ratio:16/9;overflow:hidden}
+.cam-body video{width:100%;height:100%;object-fit:cover;display:block;transform:scaleX(-1)}
+.cam-body canvas{position:absolute;top:0;left:0;width:100%;height:100%;transform:scaleX(-1)}
+.cam-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:var(--text3);font-size:14px;font-weight:500}
 .cam-spinner{width:36px;height:36px;border:3px solid var(--warm3);border-top-color:var(--rose);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:4px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.status-badge{position:absolute;top:12px;right:12px;padding:5px 14px;border-radius:100px;font-size:12px;font-weight:600;backdrop-filter:blur(8px)}
+.status-badge{position:absolute;top:12px;right:12px;padding:5px 14px;border-radius:100px;font-size:12px;font-weight:600;backdrop-filter:blur(8px);z-index:10}
 .status-badge.focused{background:rgba(122,171,142,.85);color:#fff}
 .status-badge.away{background:rgba(245,166,35,.85);color:#fff}
-.status-badge.phone{background:rgba(232,130,122,.85);color:#fff}
 .status-badge.on-break{background:rgba(155,142,196,.85);color:#fff}
-
-/* MUSIC */
 .music-card{background:var(--warm1);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:none;margin-top:1.25rem}
 .music-card.visible{display:block}
-.music-header{background:var(--warm2);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
-.music-header-left{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text2)}
-.music-note-anim{animation:bounce .8s ease-in-out infinite alternate}
-@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-3px)}}
-.music-vol{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3)}
-.music-vol input[type=range]{width:70px;accent-color:var(--lav)}
+.music-header{background:var(--warm2);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;color:var(--text2)}
 .music-iframe-wrap{position:relative;padding-bottom:56.25%;height:0;overflow:hidden}
 .music-iframe-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
-
-/* STATS PANEL */
 .stats-panel{display:flex;flex-direction:column;gap:12px}
-
-/* SESSION TIMER CARD — big countdown */
 .timer-card{background:var(--warm1);border:1px solid var(--border);border-radius:16px;padding:1.25rem 1.4rem;text-align:center}
 .timer-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
 .timer-val{font-family:var(--serif);font-size:2.8rem;font-weight:500;line-height:1;color:var(--text)}
 .timer-val.ending{color:var(--rose);animation:pulse 1s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 .timer-sub{font-size:11px;color:var(--text3);margin-top:4px}
-
 .progress-wrap{background:var(--warm1);border:1px solid var(--border);border-radius:16px;padding:1rem 1.4rem}
 .progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);font-weight:500;margin-bottom:8px}
 .progress-bar{height:8px;background:var(--warm3);border-radius:100px;overflow:hidden}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--sage2));border-radius:100px;transition:width .5s ease;width:0%}
-
+.stats-mini{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .stat-card{background:var(--warm1);border:1px solid var(--border);border-radius:16px;padding:1.1rem 1.4rem}
 .stat-card-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
 .stat-card-val{font-family:var(--serif);font-size:1.8rem;font-weight:500;line-height:1;margin-bottom:3px}
 .stat-card-val.sage{color:var(--sage2)}.stat-card-val.rose{color:var(--rose)}.stat-card-val.peach{color:var(--peach2)}.stat-card-val.lav{color:var(--lav)}
 .stat-card-sub{font-size:12px;color:var(--text3)}
-
-/* STATS 2-column mini grid */
-.stats-mini{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-/* BREAK BANNER */
-.face-warning{background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.3);border-radius:12px;padding:10px 14px;font-size:13px;color:#b8860b;font-weight:500;display:none;align-items:center;gap:8px;margin-bottom:0}
+.face-warning{background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.3);border-radius:12px;padding:10px 14px;font-size:13px;color:#b8860b;font-weight:500;display:none;align-items:center;gap:8px}
 .face-warning.visible{display:flex}
 .break-banner{background:linear-gradient(135deg,var(--lav-dim2),var(--rose-dim2));border:1px solid rgba(155,142,196,.3);border-radius:16px;padding:1.25rem 1.4rem;text-align:center;display:none}
 .break-banner.visible{display:block}
 .bb-label{font-size:11px;font-weight:600;color:var(--lav2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
 .bb-time{font-family:var(--serif);font-size:2.4rem;font-weight:500;color:var(--lav2);line-height:1}
 .bb-sub{font-size:12px;color:var(--text3);margin-top:4px;margin-bottom:12px}
-.btn-end-break{background:var(--rose);color:#fff;border:none;border-radius:100px;padding:8px 22px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 10px rgba(232,130,122,.3);transition:background .2s}
+.btn-end-break{width:100%;background:var(--rose);color:#fff;border:none;border-radius:10px;padding:11px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
 .btn-end-break:hover{background:var(--rose2)}
-
 .gesture-hint{background:var(--warm1);border:1px solid var(--border);border-radius:16px;padding:1rem 1.4rem;display:flex;align-items:center;gap:12px}
 .gh-icon{font-size:1.6rem;line-height:1}
 .gh-text{font-size:13px;color:var(--text2);line-height:1.55}
 .gh-text strong{color:var(--text);font-weight:600}
-
-/* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(45,35,24,.4);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .modal-overlay.visible{display:flex}
 .modal-box{background:var(--cream);border:1px solid var(--border);border-radius:20px;padding:2rem 2.5rem;max-width:380px;width:90%;text-align:center}
@@ -145,29 +115,25 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .modal-box h3{font-family:var(--serif);font-size:1.4rem;font-weight:500;color:var(--text);margin-bottom:.5rem}
 .modal-box p{font-size:13.5px;color:var(--text2);line-height:1.7;margin-bottom:1.75rem}
 .modal-btns{display:flex;gap:10px;justify-content:center}
-.modal-cancel{background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 22px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
-.modal-confirm{background:var(--rose);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;box-shadow:0 2px 10px rgba(232,130,122,.3)}
+.modal-cancel{background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 22px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer}
+.modal-confirm{background:var(--rose);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
 .modal-confirm:hover{background:var(--rose2)}
-
-/* SESSION COMPLETE */
 .session-end{display:none;background:var(--warm1);border:1px solid var(--border);border-radius:20px;padding:3rem 2.5rem;text-align:center}
 .session-end.visible{display:block}
 .session-end h3{font-family:var(--serif);font-size:2rem;font-weight:500;margin-bottom:.5rem}
 .big-num{font-family:var(--serif);font-size:4rem;font-weight:500;color:var(--sage2);line-height:1;margin:.75rem 0 .25rem}
 .sub{font-size:14px;color:var(--text2);margin-bottom:2rem}
-.end-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem;max-width:700px;margin-left:auto;margin-right:auto}
+.end-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem;max-width:600px;margin-left:auto;margin-right:auto}
 .end-stat{background:var(--cream);border:1px solid var(--border);border-radius:14px;padding:1rem}
 .es-lbl{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
 .es-val{font-family:var(--serif);font-size:1.5rem;font-weight:500}
-.es-val.rose{color:var(--rose)}.es-val.peach{color:var(--peach2)}.es-val.lav{color:var(--lav)}.es-val.sage{color:var(--sage2)}
+.es-val.rose{color:var(--rose)}.es-val.peach{color:var(--peach2)}.es-val.lav{color:var(--lav)}
 .end-note{font-size:13px;color:var(--text3);margin-bottom:1.75rem;font-style:italic}
 .end-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .btn-new{background:var(--rose);color:#fff;border:none;border-radius:10px;padding:12px 30px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;box-shadow:0 3px 14px rgba(232,130,122,.3)}
 .btn-new:hover{background:var(--rose2)}
 .btn-hist{background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:10px;padding:11px 24px;font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;display:inline-block;transition:all .2s}
 .btn-hist:hover{border-color:var(--rose);color:var(--rose)}
-
-/* FOCUS SCORE RING */
 .score-ring-wrap{display:flex;justify-content:center;margin:1.5rem 0}
 .score-ring{position:relative;width:120px;height:120px}
 .score-ring svg{transform:rotate(-90deg)}
@@ -176,19 +142,28 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .score-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .score-ring-num{font-family:var(--serif);font-size:1.6rem;font-weight:500;color:var(--text);line-height:1}
 .score-ring-lbl{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
-.logo-blob{width:28px;height:28px;background:linear-gradient(135deg,var(--rose),var(--lav));border-radius:40% 60% 55% 45%/50% 40% 60% 50%;animation:morph 6s ease-in-out infinite;flex-shrink:0}
-@keyframes morph{0%,100%{border-radius:40% 60% 55% 45%/50% 40% 60% 50%}33%{border-radius:55% 45% 40% 60%/40% 60% 45% 55%}66%{border-radius:45% 55% 60% 40%/60% 45% 55% 40%}}
+.loading-models{background:var(--warm1);border:1px solid var(--border);border-radius:16px;padding:1.25rem 1.4rem;text-align:center;display:none}
+.loading-models.visible{display:block}
+.lm-text{font-size:13px;color:var(--text2);margin-top:8px}
+@media(max-width:768px){
+  nav{padding:0 1.5rem}
+  .page{padding:76px 1rem 2rem}
+  .setup-form{grid-template-columns:1fr 1fr}
+  .tracker-grid{grid-template-columns:1fr}
+  .stats-mini{grid-template-columns:1fr 1fr}
+  .end-grid{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
 
 <nav>
   <a href="/" class="nav-logo"><div class="logo-blob"></div>HocusFocus</a>
-  <div class="nav-right" style="display:flex;align-items:center;gap:1.8rem">
-    <a href="/" style="color:var(--text2);text-decoration:none;font-size:13.5px;font-weight:500;transition:color .2s">Home</a>
-    <a href="/history" style="color:var(--text2);text-decoration:none;font-size:13.5px;font-weight:500;transition:color .2s">History</a>
+  <div class="nav-right">
+    <a href="/">Home</a>
+    <a href="/history">History</a>
     <span style="font-size:13.5px;color:var(--text2);font-weight:500">{{ user.name.split()[0] if user else '' }}</span>
-    <a href="/logout" style="color:var(--text3);text-decoration:none;font-size:13.5px;font-weight:500;transition:color .2s">Sign out</a>
+    <a href="/logout" style="color:var(--text3)">Sign out</a>
   </div>
 </nav>
 
@@ -197,7 +172,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
   <div class="modal-box">
     <div class="modal-icon">⏸</div>
     <h3>End session early?</h3>
-    <p>Your session will end now and all analytics will be saved — you'll see your full breakdown immediately.</p>
+    <p>Your session will end now and all analytics will be saved.</p>
     <div class="modal-btns">
       <button class="modal-cancel" onclick="closeQuitModal()">Keep going</button>
       <button class="modal-confirm" onclick="confirmQuit()">End & save</button>
@@ -207,7 +182,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 
 <div class="page">
 
-  <!-- SETUP CARD -->
+  <!-- SETUP -->
   <div class="setup-card" id="setupCard">
     <h2>New session</h2>
     <div class="setup-form">
@@ -224,92 +199,74 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
       </div>
       <div class="field">
         <label>Planned (min)</label>
-        <input type="number" id="plannedInput" value="60" min="5" max="480">
+        <input type="number" id="plannedInput" value="60" min="1" max="480">
       </div>
       <div class="btn-row">
         <button class="btn-start" id="btnStart" onclick="startSession()">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polygon points="4,2 12,7 4,12" fill="currentColor"/></svg>
           Start
         </button>
-        <button class="btn-stop" id="btnStop" onclick="stopSession()">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="currentColor"/></svg>
-          End session
-        </button>
-        <button class="btn-quit" id="btnQuit" onclick="openQuitModal()">✕ Quit early</button>
+        <button class="btn-quit" id="btnQuit" onclick="openQuitModal()">✕ End session</button>
       </div>
     </div>
     <div class="music-toggle-row">
       <label>
-        <span class="toggle-switch">
-          <input type="checkbox" id="musicToggle" onchange="toggleMusic()">
-          <span class="toggle-slider"></span>
-        </span>
+        <span class="toggle-switch"><input type="checkbox" id="musicToggle" onchange="toggleMusic()"><span class="toggle-slider"></span></span>
         Play study music during session
       </label>
       <a href="https://youtu.be/AawLM81gIHo" target="_blank" style="font-size:12px;color:var(--text3);margin-left:auto;font-style:italic;text-decoration:none;border-bottom:1px dotted var(--text3)">to study like a medieval philosopher having the truth revealed by divine grace ↗</a>
     </div>
   </div>
 
-  <!-- LIVE TRACKER -->
+  <!-- TRACKER -->
   <div class="tracker-grid" id="trackerGrid" style="display:none">
-
-    <!-- LEFT: webcam + music -->
     <div>
       <div class="cam-card">
         <div class="cam-toolbar">
           <div class="dc dc-r"></div><div class="dc dc-y"></div><div class="dc dc-g"></div>
           <span class="cam-title" id="camTitle">Session active</span>
         </div>
-        <div class="cam-body">
+        <div class="cam-body" id="camBody">
           <div class="cam-placeholder" id="camPlaceholder">
             <div class="cam-spinner"></div>
-            <span style="font-size:13px">Connecting camera...</span>
+            <span>Starting camera...</span>
           </div>
-          <img id="videoFeed" src="" style="display:none;width:100%;height:100%;object-fit:cover" alt="Webcam">
-          <div class="status-badge focused" id="statusBadge">Focused</div>
+          <video id="videoEl" autoplay playsinline muted style="display:none"></video>
+          <canvas id="overlayCanvas"></canvas>
+          <div class="status-badge focused" id="statusBadge">Loading...</div>
         </div>
       </div>
+      <div class="loading-models" id="loadingModels">
+        <div class="cam-spinner" style="margin:0 auto"></div>
+        <div class="lm-text">Loading detection models — first load takes ~15 seconds...</div>
+      </div>
       <div class="music-card" id="musicCard">
-        <div style="padding:1rem 1.25rem;display:flex;align-items:center;gap:12px">
-          <span style="font-size:1.4rem">🎵</span>
-          <div>
-            <a href="https://youtu.be/AawLM81gIHo" target="_blank"
-               style="font-family:var(--serif);font-size:0.95rem;font-style:italic;color:var(--text2);text-decoration:none;border-bottom:1px dotted var(--border2);line-height:1.5;transition:color .2s"
-               onmouseover="this.style.color='var(--lav)'"
-               onmouseout="this.style.color='var(--text2)'">
-              to study like a medieval philosopher having the truth revealed by divine grace ↗
-            </a>
-            <div style="font-size:11px;color:var(--text3);margin-top:4px">Opens YouTube in a new tab</div>
-          </div>
+        <div class="music-header">Study music</div>
+        <div class="music-iframe-wrap">
+          <iframe id="ytPlayer" src="https://www.youtube.com/embed/AawLM81gIHo?autoplay=1&controls=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT: stats -->
     <div class="stats-panel">
-
-      <!-- big session countdown -->
       <div class="timer-card">
         <div class="timer-label">Time remaining</div>
         <div class="timer-val" id="timerVal">60:00</div>
-        <div class="timer-sub" id="timerSub">of <span id="timerPlanned">60</span> min planned</div>
+        <div class="timer-sub">of <span id="timerPlanned">60</span> min planned</div>
       </div>
 
-      <!-- face warning -->
       <div class="face-warning" id="faceWarning">
-        <span style="font-size:1.2rem">👤</span>
-        <span>Please move so your <strong>full face</strong> is visible — currently not counted as present.</span>
+        <span>👤</span>
+        <span>Please move so your full face is visible in the camera.</span>
       </div>
 
-      <!-- break banner -->
       <div class="break-banner" id="breakBanner">
-        <div class="bb-label">🌿 Break time</div>
+        <div class="bb-label">Break time</div>
         <div class="bb-time" id="breakTime">3:00</div>
         <div class="bb-sub">Session resumes automatically</div>
-        <button onclick="endBreakEarly()" style="margin-top:10px;width:100%;background:var(--rose);color:#fff;border:none;border-radius:10px;padding:11px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 3px 12px rgba(232,130,122,.35);transition:background .2s" onmouseover="this.style.background='var(--rose2)'" onmouseout="this.style.background='var(--rose)'">✓ End break now</button>
+        <button class="btn-end-break" onclick="endBreakEarly()">✓ End break now</button>
       </div>
 
-      <!-- progress -->
       <div class="progress-wrap">
         <div class="progress-label">
           <span>Effective progress</span>
@@ -318,7 +275,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       </div>
 
-      <!-- stats mini grid -->
       <div class="stats-mini">
         <div class="stat-card">
           <div class="stat-card-label">Effective</div>
@@ -337,19 +293,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
         </div>
         <div class="stat-card">
           <div class="stat-card-label">Away time</div>
-          <div class="stat-card-val rose" id="statLost">0.0m</div>
+          <div class="stat-card-val rose" id="statAway">0.0m</div>
           <div class="stat-card-sub">not counted</div>
         </div>
       </div>
 
-      <!-- always-visible session controls -->
-      <div style="display:flex;gap:8px">
-        <button onclick="openQuitModal()" style="flex:1;background:transparent;color:var(--rose);border:1.5px solid var(--rose);border-radius:10px;padding:10px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s" onmouseover="this.style.background='var(--rose)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--rose)'">✕ End session</button>
-      </div>
-
       <div class="gesture-hint">
         <span class="gh-icon" id="gestureIcon">✋</span>
-        <div class="gh-text"><strong>Gesture breaks:</strong> hold fingers up for 1 second — count sets break in minutes. Use one hand for 1–5 mins, both hands for 6–10 mins.</div>
+        <div class="gh-text"><strong>Gesture breaks:</strong> hold 1–5 fingers up for 1.5 seconds — the count sets your break in minutes.</div>
       </div>
     </div>
   </div>
@@ -358,8 +309,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
   <div class="session-end" id="sessionEnd">
     <div style="font-size:3rem;margin-bottom:.75rem">🌸</div>
     <h3>Session complete</h3>
-
-    <!-- focus score ring -->
     <div class="score-ring-wrap">
       <div class="score-ring">
         <svg viewBox="0 0 120 120" width="120" height="120">
@@ -372,144 +321,333 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
         </div>
       </div>
     </div>
-
     <div class="big-num" id="endEffective">—</div>
-    <div class="sub" id="endSub">effective minutes</div>
-
+    <div class="sub">effective minutes</div>
     <div class="end-grid">
       <div class="end-stat"><div class="es-lbl">Planned</div><div class="es-val" id="endPlanned">—</div></div>
       <div class="end-stat"><div class="es-lbl">Breaks</div><div class="es-val peach" id="endBreak">—</div></div>
       <div class="end-stat"><div class="es-lbl">Away time</div><div class="es-val rose" id="endAway">—</div></div>
     </div>
-
     <p class="end-note" id="endNote"></p>
     <div class="end-actions">
       <button class="btn-new" onclick="newSession()">New session</button>
-      <a href="/history" class="btn-hist">View full history →</a>
+      <a href="/history" class="btn-hist">View history →</a>
     </div>
   </div>
 
 </div>
 
 <script>
-const socket = io(window.location.origin, {
-  transports: ['websocket', 'polling'],
-  upgrade: true
-});
-let sessionActive  = false;
-let musicEnabled   = false;
-let plannedSeconds = 0;
-let sessionStartTs = 0;
-let countdownTimer = null;
-let autoEndFired   = false;
-let feedWarmed     = false;
+// ── State ──────────────────────────────────────────────────────────────────────
+let sessionActive   = false;
+let musicEnabled    = false;
+let plannedSecs     = 0;
+let sessionStartTs  = 0;
+let countdownTimer  = null;
+let autoEndFired    = false;
 
-// Pre-warm camera as soon as page loads — eliminates 30s startup delay
-window.addEventListener('load', () => {
-  const img = document.getElementById('videoFeed');
-  img.onload = () => { feedWarmed = true; };
-  img.onerror = () => { feedWarmed = false; };
-  img.src = '/video_feed?' + Date.now();
-});
+// Detection state
+let faceDetector    = null;
+let handDetector    = null;
+let detectionLoop   = null;
+let videoStream     = null;
+let modelsLoaded    = false;
 
-function showFeed() {
-  const img = document.getElementById('videoFeed');
-  const ph  = document.getElementById('camPlaceholder');
-  if (feedWarmed) {
-    ph.style.display  = 'none';
-    img.style.display = 'block';
-  } else {
-    // not yet warmed — attach onload and refresh src
-    img.onload = () => { ph.style.display='none'; img.style.display='block'; feedWarmed=true; };
-    img.src = '/video_feed?' + Date.now();
+// Session timers (in seconds)
+let effectiveSecs   = 0;
+let awaySecs        = 0;
+let breakSecs       = 0;
+let breakCount      = 0;
+let lastTickTime    = null;
+
+// Gesture state
+let inBreak         = false;
+let breakEndTime    = null;
+let lastFingers     = 0;
+let stableCount     = 0;
+let holdStart       = null;
+let gestureFired    = false;
+const HOLD_REQUIRED = 1.5;
+const STABLE_FRAMES = 2;
+
+// Break interval
+let breakInterval   = null;
+
+// ── Load TF Models ─────────────────────────────────────────────────────────────
+async function loadModels() {
+  document.getElementById('loadingModels').classList.add('visible');
+  try {
+    await tf.setBackend('webgl');
+    await tf.ready();
+
+    // Face detector
+    faceDetector = await faceDetection.createDetector(
+      faceDetection.SupportedModels.MediaPipeFaceDetector,
+      { runtime: 'tfjs', maxFaces: 1 }
+    );
+
+    // Hand detector
+    handDetector = await handPoseDetection.createDetector(
+      handPoseDetection.SupportedModels.MediaPipeHands,
+      { runtime: 'tfjs', maxHands: 1, modelType: 'lite' }
+    );
+
+    modelsLoaded = true;
+  } catch(e) {
+    console.error('Model load failed:', e);
   }
+  document.getElementById('loadingModels').classList.remove('visible');
 }
 
-socket.on('connected', () => console.log('[HocusFocus] connected'));
-socket.on('stats_update', s => { if (sessionActive) updateStats(s); });
-socket.on('break_started', d => showBreakBanner(d.minutes * 60));
-socket.on('break_ended',   () => { clearBreakBanner(); });
-socket.on('session_ended', s => { if (sessionActive) showSummary(s, false); });
+// Load models when page loads
+window.addEventListener('load', loadModels);
 
-// ── countdown clock ───────────────────────────────────────────────────────────
-function startCountdown(minutes) {
-  plannedSeconds = minutes * 60;
-  sessionStartTs = Date.now();
-  autoEndFired   = false;
+// ── Finger counting ────────────────────────────────────────────────────────────
+function countFingers(keypoints) {
+  // Keypoint indices for MediaPipe Hands
+  // Tips: thumb=4, index=8, middle=12, ring=16, pinky=20
+  // PIPs: thumb=3, index=6, middle=10, ring=14, pinky=18
+  // MCPs: index=5, middle=9, ring=13, pinky=17
+  // Wrist: 0
 
-  document.getElementById('timerPlanned').textContent = minutes;
-  document.getElementById('statPlanned').textContent  = minutes;
+  if (!keypoints || keypoints.length < 21) return 0;
 
-  if (countdownTimer) clearInterval(countdownTimer);
-  countdownTimer = setInterval(() => {
-    const elapsed = (Date.now() - sessionStartTs) / 1000;
-    const rem     = Math.max(plannedSeconds - elapsed, 0);
-    const m       = Math.floor(rem / 60);
-    const s       = Math.floor(rem % 60);
-    const tv      = document.getElementById('timerVal');
-    tv.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const kp = keypoints;
+  let count = 0;
 
-    // pulse red in last 60 seconds
-    if (rem <= 60) tv.classList.add('ending');
-    else           tv.classList.remove('ending');
+  // Thumb: tip x further from palm centre than ip
+  const palmCx = (kp[5].x + kp[17].x) / 2;
+  if (Math.abs(kp[4].x - palmCx) > Math.abs(kp[3].x - palmCx)) count++;
 
-    // AUTO-END when countdown hits zero
-    if (rem <= 0 && !autoEndFired) {
-      autoEndFired = true;
-      clearInterval(countdownTimer);
-      _endSession(false);   // natural end
+  // Four fingers: tip y above pip y (smaller y = higher in image)
+  const pairs = [[8,6],[12,10],[16,14],[20,18]];
+  for (const [tip, pip] of pairs) {
+    if (kp[tip].y < kp[pip].y) count++;
+  }
+
+  return count;
+}
+
+function handVisible(keypoints) {
+  if (!keypoints || keypoints.length < 21) return false;
+  const xs = keypoints.map(k => k.x);
+  const ys = keypoints.map(k => k.y);
+  const spread = (Math.max(...xs) - Math.min(...xs)) + (Math.max(...ys) - Math.min(...ys));
+  const video  = document.getElementById('videoEl');
+  const norm   = spread / ((video.videoWidth + video.videoHeight) / 2);
+  return norm > 0.08;
+}
+
+// ── Detection loop ─────────────────────────────────────────────────────────────
+async function runDetection() {
+  if (!sessionActive || !modelsLoaded) return;
+
+  const video   = document.getElementById('videoEl');
+  const canvas  = document.getElementById('overlayCanvas');
+  const ctx     = canvas.getContext('2d');
+
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  // Detect face
+  let facePresent = false;
+  let faceFull    = false;
+  try {
+    const faces = await faceDetector.estimateFaces(video);
+    facePresent = faces.length > 0;
+    if (facePresent) {
+      const box = faces[0].box;
+      const w   = video.videoWidth;
+      const h   = video.videoHeight;
+      const m   = 0.05;
+      faceFull  = box.xMin > w*m && box.xMax < w*(1-m) &&
+                  box.yMin > h*m && box.yMax < h*(1-m);
     }
-  }, 500);
+  } catch(e) {}
+
+  // Detect hands
+  let fingers = 0;
+  try {
+    const hands = await handDetector.estimateHands(video);
+    if (hands.length > 0 && handVisible(hands[0].keypoints)) {
+      fingers = countFingers(hands[0].keypoints);
+      // Draw hand skeleton
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawHand(ctx, hands[0].keypoints, canvas.width, canvas.height);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  } catch(e) {}
+
+  // Handle gesture
+  handleGesture(fingers);
+
+  // Tick session timers
+  tickSession(facePresent, faceFull);
+
+  // Update UI
+  updateUI(facePresent, faceFull, fingers);
+
+  // Schedule next frame
+  detectionLoop = requestAnimationFrame(runDetection);
 }
 
-// ── stats ─────────────────────────────────────────────────────────────────────
-function updateStats(s) {
-  document.getElementById('statEffective').textContent  = s.effective_minutes.toFixed(1) + 'm';
-  document.getElementById('statScore').textContent      = s.focus_score.toFixed(0) + '%';
-  document.getElementById('statBreaks').textContent     = s.break_minutes.toFixed(1) + 'm';
-  document.getElementById('statBreakCount').textContent = s.break_count + ' taken';
-  document.getElementById('statLost').textContent = s.away_minutes.toFixed(1) + 'm';
-  document.getElementById('progressLabel').textContent  = s.effective_minutes.toFixed(1) + ' / ' + s.planned_minutes + ' min';
-  const pct = Math.min((s.effective_minutes / s.planned_minutes) * 100, 100);
-  document.getElementById('progressFill').style.width   = pct + '%';
-
-  const badge = document.getElementById('statusBadge');
-  if (s.on_break) {
-    badge.textContent = 'On break'; badge.className = 'status-badge on-break';
-    if (s.break_remaining > 0) showBreakBanner(s.break_remaining);
-  } else {
-    clearBreakBanner();
-    if (!s.face_present)       { badge.textContent = 'Away — no face'; badge.className = 'status-badge away'; }
-    else if (!s.face_full)     { badge.textContent = 'Move closer';    badge.className = 'status-badge away'; showFaceWarning(true); }
-    else if (s.phone_present)  { badge.textContent = 'Phone detected'; badge.className = 'status-badge phone'; showFaceWarning(false); }
-    else                       { badge.textContent = 'Focused';        badge.className = 'status-badge focused'; showFaceWarning(false); }
+function drawHand(ctx, keypoints, w, h) {
+  if (!keypoints) return;
+  const connections = [
+    [0,1],[1,2],[2,3],[3,4],
+    [0,5],[5,6],[6,7],[7,8],
+    [0,9],[9,10],[10,11],[11,12],
+    [0,13],[13,14],[14,15],[15,16],
+    [0,17],[17,18],[18,19],[19,20],
+    [5,9],[9,13],[13,17]
+  ];
+  ctx.strokeStyle = 'rgba(155,142,196,0.7)';
+  ctx.lineWidth   = 2;
+  for (const [a,b] of connections) {
+    if (!keypoints[a] || !keypoints[b]) continue;
+    // mirror x because video is mirrored
+    ctx.beginPath();
+    ctx.moveTo(w - keypoints[a].x, keypoints[a].y);
+    ctx.lineTo(w - keypoints[b].x, keypoints[b].y);
+    ctx.stroke();
   }
-  if (s.fingers > 0 && !s.on_break) {
-    const ems = ['','☝️','✌️','🤟','🖖','✋'];
-    document.getElementById('gestureIcon').textContent = ems[Math.min(s.fingers,5)] || '✋';
+  ctx.fillStyle = 'rgba(232,130,122,0.85)';
+  for (const kp of keypoints) {
+    ctx.beginPath();
+    ctx.arc(w - kp.x, kp.y, 4, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+// ── Session ticking ────────────────────────────────────────────────────────────
+function tickSession(facePresent, faceFull) {
+  const now     = Date.now();
+  const elapsed = lastTickTime ? (now - lastTickTime) / 1000 : 0;
+  lastTickTime  = now;
+
+  if (inBreak) {
+    breakSecs += elapsed;
+    if (Date.now() >= breakEndTime) endBreakInternal();
+    return;
+  }
+
+  if (!facePresent || !faceFull) {
+    awaySecs += elapsed;
   } else {
+    effectiveSecs += elapsed;
+  }
+}
+
+// ── Gesture handling ───────────────────────────────────────────────────────────
+function handleGesture(fingers) {
+  if (inBreak) {
+    lastFingers = 0; stableCount = 0; holdStart = null; gestureFired = false;
+    return;
+  }
+
+  if (fingers > 0) {
+    if (fingers === lastFingers) {
+      stableCount++;
+      if (stableCount >= STABLE_FRAMES) {
+        if (!holdStart) holdStart = Date.now();
+        const held = (Date.now() - holdStart) / 1000;
+        if (!gestureFired && held >= HOLD_REQUIRED) {
+          const mins = Math.min(fingers, 5);
+          startBreak(mins);
+          gestureFired = true;
+        }
+      }
+    } else {
+      lastFingers  = fingers;
+      stableCount  = 1;
+      holdStart    = null;
+      gestureFired = false;
+    }
+  } else {
+    lastFingers  = 0;
+    stableCount  = 0;
+    holdStart    = null;
+    gestureFired = false;
+  }
+}
+
+function startBreak(minutes) {
+  inBreak      = true;
+  breakEndTime = Date.now() + minutes * 60 * 1000;
+  breakCount++;
+  showBreakBanner(minutes * 60);
+}
+
+function endBreakInternal() {
+  inBreak = false;
+  clearBreakBanner();
+}
+
+async function endBreakEarly() {
+  inBreak = false;
+  clearBreakBanner();
+}
+
+// ── UI updates ─────────────────────────────────────────────────────────────────
+function updateUI(facePresent, faceFull, fingers) {
+  // face warning
+  const fw = document.getElementById('faceWarning');
+  if (facePresent && !faceFull) fw.classList.add('visible');
+  else fw.classList.remove('visible');
+
+  // status badge
+  const badge = document.getElementById('statusBadge');
+  if (inBreak) {
+    badge.textContent = 'On break';
+    badge.className   = 'status-badge on-break';
+  } else if (!facePresent) {
+    badge.textContent = 'Away';
+    badge.className   = 'status-badge away';
+  } else if (!faceFull) {
+    badge.textContent = 'Move closer';
+    badge.className   = 'status-badge away';
+  } else if (fingers > 0 && stableCount >= STABLE_FRAMES) {
+    const pct = holdStart ? Math.min(100, Math.round((Date.now()-holdStart)/1000/HOLD_REQUIRED*100)) : 0;
+    badge.textContent = `${fingers} finger${fingers>1?'s':''} — ${pct}%`;
+    badge.className   = 'status-badge on-break';
+    document.getElementById('gestureIcon').textContent = ['','☝️','✌️','🤟','🖖','✋'][Math.min(fingers,5)];
+  } else {
+    badge.textContent = 'Focused';
+    badge.className   = 'status-badge focused';
     document.getElementById('gestureIcon').textContent = '✋';
   }
+
+  // stats
+  const eff   = effectiveSecs / 60;
+  const away  = awaySecs      / 60;
+  const brk   = breakSecs     / 60;
+  const plan  = plannedSecs   / 60;
+  const score = plan > 0 ? Math.min((eff/plan)*100, 100) : 0;
+
+  document.getElementById('statEffective').textContent  = eff.toFixed(1)  + 'm';
+  document.getElementById('statScore').textContent      = score.toFixed(0) + '%';
+  document.getElementById('statBreaks').textContent     = brk.toFixed(1)  + 'm';
+  document.getElementById('statBreakCount').textContent = breakCount + ' taken';
+  document.getElementById('statAway').textContent       = away.toFixed(1) + 'm';
+  document.getElementById('progressLabel').textContent  = eff.toFixed(1)  + ' / ' + plan.toFixed(0) + ' min';
+  document.getElementById('progressFill').style.width   = score + '%';
+  document.getElementById('statPlanned').textContent    = plan.toFixed(0);
 }
 
-// ── break banner ──────────────────────────────────────────────────────────────
-let breakInterval = null;
+// ── Break banner ───────────────────────────────────────────────────────────────
 function showBreakBanner(seconds) {
   document.getElementById('breakBanner').classList.add('visible');
   if (breakInterval) clearInterval(breakInterval);
   let rem = Math.ceil(seconds);
   const tick = () => {
-    if (rem <= 0) { clearBreakBanner(); return; }
-    const m = Math.floor(rem/60), s = rem % 60;
+    if (rem <= 0 || !inBreak) { clearBreakBanner(); return; }
+    const m = Math.floor(rem/60), s = rem%60;
     document.getElementById('breakTime').textContent = m + ':' + String(s).padStart(2,'0');
     rem--;
   };
   tick();
   breakInterval = setInterval(tick, 1000);
-}
-function showFaceWarning(show) {
-  const w = document.getElementById('faceWarning');
-  if (w) show ? w.classList.add('visible') : w.classList.remove('visible');
 }
 
 function clearBreakBanner() {
@@ -517,128 +655,176 @@ function clearBreakBanner() {
   document.getElementById('breakBanner').classList.remove('visible');
 }
 
-// ── start ─────────────────────────────────────────────────────────────────────
+// ── Countdown timer ────────────────────────────────────────────────────────────
+function startCountdown(minutes) {
+  plannedSecs    = minutes * 60;
+  sessionStartTs = Date.now();
+  autoEndFired   = false;
+  document.getElementById('timerPlanned').textContent = minutes;
+  document.getElementById('statPlanned').textContent  = minutes;
+
+  if (countdownTimer) clearInterval(countdownTimer);
+  countdownTimer = setInterval(() => {
+    const elapsed = (Date.now() - sessionStartTs) / 1000;
+    const rem     = Math.max(plannedSecs - elapsed, 0);
+    const m       = Math.floor(rem/60);
+    const s       = Math.floor(rem%60);
+    const tv      = document.getElementById('timerVal');
+    tv.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    if (rem <= 60) tv.classList.add('ending');
+    else           tv.classList.remove('ending');
+    if (rem <= 0 && !autoEndFired) {
+      autoEndFired = true;
+      clearInterval(countdownTimer);
+      _endSession(false);
+    }
+  }, 500);
+}
+
+// ── Start session ──────────────────────────────────────────────────────────────
 async function startSession() {
   const task    = document.getElementById('taskInput').value.trim() || 'Work session';
   const mode    = document.getElementById('modeInput').value;
   const planned = parseInt(document.getElementById('plannedInput').value) || 60;
 
   document.getElementById('btnStart').disabled = true;
-  const res  = await fetch('/api/start', {
+
+  // Request camera
+  try {
+    videoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    const video = document.getElementById('videoEl');
+    video.srcObject = videoStream;
+    await new Promise(r => video.onloadedmetadata = r);
+    video.play();
+    document.getElementById('camPlaceholder').style.display = 'none';
+    video.style.display = 'block';
+  } catch(e) {
+    alert('Camera access denied. Please allow camera access and try again.');
+    document.getElementById('btnStart').disabled = false;
+    return;
+  }
+
+  // Reset session state
+  effectiveSecs = 0; awaySecs = 0; breakSecs = 0; breakCount = 0;
+  inBreak = false; lastTickTime = Date.now();
+  lastFingers = 0; stableCount = 0; holdStart = null; gestureFired = false;
+
+  // Save to server
+  await fetch('/api/start', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({task, mode, planned})
   });
-  const data = await res.json();
-  if (data.error) { alert(data.error); document.getElementById('btnStart').disabled = false; return; }
 
   sessionActive = true;
   autoEndFired  = false;
   document.getElementById('setupCard').style.display   = 'none';
   document.getElementById('trackerGrid').style.display = 'grid';
   document.getElementById('sessionEnd').classList.remove('visible');
-  document.getElementById('btnStop').classList.add('visible');
   document.getElementById('btnQuit').classList.add('visible');
   document.getElementById('camTitle').textContent = task + ' · ' + mode;
-
-  // Show feed immediately — camera was pre-warmed
-  showFeed();
 
   if (musicEnabled) document.getElementById('musicCard').classList.add('visible');
 
   startCountdown(planned);
+
+  // Start detection loop
+  if (modelsLoaded) {
+    detectionLoop = requestAnimationFrame(runDetection);
+  } else {
+    // Wait for models then start
+    const wait = setInterval(() => {
+      if (modelsLoaded) { clearInterval(wait); detectionLoop = requestAnimationFrame(runDetection); }
+    }, 500);
+  }
 }
 
-// ── stop (button) ─────────────────────────────────────────────────────────────
-async function stopSession() {
-  if (!sessionActive) return;
-  await _endSession(false);
-}
-
-// ── quit early ────────────────────────────────────────────────────────────────
+// ── End session ────────────────────────────────────────────────────────────────
 function openQuitModal()  { document.getElementById('quitModal').classList.add('visible'); }
 function closeQuitModal() { document.getElementById('quitModal').classList.remove('visible'); }
 async function confirmQuit() { closeQuitModal(); await _endSession(true); }
 
-// ── shared end ────────────────────────────────────────────────────────────────
 async function _endSession(early) {
-  if (!sessionActive && autoEndFired === false) return;
+  if (!sessionActive) return;
   sessionActive = false;
-  if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
-  clearBreakBanner();
 
-  document.getElementById('videoFeed').src = '';
-  document.getElementById('videoFeed').style.display    = 'none';
+  if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+  if (detectionLoop)  { cancelAnimationFrame(detectionLoop); detectionLoop = null; }
+  if (breakInterval)  { clearInterval(breakInterval); breakInterval = null; }
+
+  // Stop camera
+  if (videoStream) {
+    videoStream.getTracks().forEach(t => t.stop());
+    videoStream = null;
+  }
+  document.getElementById('videoEl').style.display    = 'none';
+  document.getElementById('videoEl').srcObject        = null;
   document.getElementById('camPlaceholder').style.display = 'flex';
   document.getElementById('musicCard').classList.remove('visible');
-  document.getElementById('btnStop').classList.remove('visible');
   document.getElementById('btnQuit').classList.remove('visible');
 
-  const res  = await fetch('/api/stop', {method:'POST'});
-  const data = await res.json();
-  showSummary(data.summary || {}, early);
+  // Build summary
+  const plan  = plannedSecs / 60;
+  const eff   = effectiveSecs / 60;
+  const away  = awaySecs     / 60;
+  const brk   = breakSecs    / 60;
+  const score = plan > 0 ? Math.min((eff/plan)*100, 100) : 0;
+
+  const summary = {
+    planned_minutes:   Math.round(plan  * 10) / 10,
+    effective_minutes: Math.round(eff   * 10) / 10,
+    away_minutes:      Math.round(away  * 10) / 10,
+    break_minutes:     Math.round(brk   * 10) / 10,
+    break_count:       breakCount,
+    focus_score:       Math.round(score * 10) / 10,
+    phone_minutes:     0,
+  };
+
+  // Save to server
+  try {
+    await fetch('/api/stop', { method:'POST' });
+    await fetch('/api/save_summary', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(summary)
+    });
+  } catch(e) {}
+
+  showSummary(summary, early);
 }
 
-// ── summary ───────────────────────────────────────────────────────────────────
 function showSummary(s, early) {
-  sessionActive = false;
   document.getElementById('trackerGrid').style.display = 'none';
   document.getElementById('setupCard').style.display   = 'block';
   document.getElementById('sessionEnd').classList.add('visible');
   document.getElementById('btnStart').disabled = false;
 
-  const eff   = (s.effective_minutes || 0);
-  const plan  = (s.planned_minutes   || 1);
-  const score = (s.focus_score       || 0);
-
-  document.getElementById('endEffective').textContent = eff.toFixed(1);
-  document.getElementById('endSub').textContent       = 'effective minutes';
-  document.getElementById('endPlanned').textContent   = plan.toFixed(0) + ' min';
-  document.getElementById('endBreak').textContent     = (s.break_minutes || 0).toFixed(1) + ' min';
-
-  document.getElementById('endAway').textContent      = (s.away_minutes  || 0).toFixed(1) + ' min';
+  const score = s.focus_score || 0;
+  document.getElementById('endEffective').textContent = (s.effective_minutes||0).toFixed(1);
+  document.getElementById('endPlanned').textContent   = (s.planned_minutes  ||0).toFixed(0) + ' min';
+  document.getElementById('endBreak').textContent     = (s.break_minutes    ||0).toFixed(1) + ' min';
+  document.getElementById('endAway').textContent      = (s.away_minutes     ||0).toFixed(1) + ' min';
   document.getElementById('ringScore').textContent    = score.toFixed(0) + '%';
-  document.getElementById('endNote').textContent      = early
-    ? 'Session ended early — all data saved to your history.'
-    : 'Time\'s up! Great work. Your session has been saved.';
+  document.getElementById('endNote').textContent      = early ? 'Session ended early — data saved.' : "Time\'s up! Great work.";
 
-  // animate score ring
-  const circumference = 339.3;
-  const offset = circumference - (score / 100) * circumference;
-  setTimeout(() => {
-    document.getElementById('scoreRingFill').style.strokeDashoffset = offset;
-  }, 200);
-
-  // colour ring by score
+  const circ   = 339.3;
+  const offset = circ - (score/100) * circ;
+  setTimeout(() => { document.getElementById('scoreRingFill').style.strokeDashoffset = offset; }, 200);
   const ring = document.getElementById('scoreRingFill');
-  if (score >= 80)      ring.style.stroke = 'var(--sage)';
-  else if (score >= 50) ring.style.stroke = 'var(--peach)';
-  else                  ring.style.stroke = 'var(--rose)';
+  ring.style.stroke = score >= 80 ? 'var(--sage)' : score >= 50 ? 'var(--peach)' : 'var(--rose)';
 }
 
 function newSession() {
   document.getElementById('sessionEnd').classList.remove('visible');
   document.getElementById('camPlaceholder').style.display = 'flex';
-  // reset ring
   document.getElementById('scoreRingFill').style.strokeDashoffset = '339.3';
   document.getElementById('timerVal').classList.remove('ending');
 }
 
-// ── break early ───────────────────────────────────────────────────────────────
-async function endBreakEarly() {
-  await fetch('/api/end_break', {method:'POST'});
-  clearBreakBanner();
-}
-
-// ── music ─────────────────────────────────────────────────────────────────────
 function toggleMusic() {
   musicEnabled = document.getElementById('musicToggle').checked;
   if (!sessionActive) return;
   const card = document.getElementById('musicCard');
-  if (musicEnabled) { card.classList.add('visible'); }
-  else              { card.classList.remove('visible'); }
+  musicEnabled ? card.classList.add('visible') : card.classList.remove('visible');
 }
-
-
 </script>
 </body>
 </html>
