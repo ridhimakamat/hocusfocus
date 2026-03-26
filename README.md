@@ -2,7 +2,7 @@
 
 **Behavior-based productivity tracking using computer vision.**
 
-HocusFocus measures your real productive time — not your intentions. Your webcam quietly tracks presence and breaks so you always know where your day really went.
+HocusFocus measures your real productive time. Your webcam quietly tracks presence and breaks so you always know where your day actually went.
 
 ## Features
 
@@ -23,7 +23,7 @@ HocusFocus measures your real productive time — not your intentions. Your webc
 - **MediaPipe** — face mesh and hand landmark detection
 - **Pandas + Matplotlib** — session data analysis and chart generation
 - **Google Sheets API** — optional session sync
-
+- **tensorflow.js**
 ---
 
 ## Running locally
