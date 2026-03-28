@@ -242,8 +242,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
         <div class="cam-spinner" style="margin:0 auto"></div>
         <div class="lm-text">Loading detection models — first load takes ~15 seconds...</div>
       </div>
-      <div class="music-card" id="musicCard">
-        <div class="music-header">Study music</div>
+      <div class="music-card" id="musicCard" style="display:none">
+        <div class="music-header" style="padding:10px 14px;background:var(--warm2);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text2);display:flex;justify-content:space-between;align-items:center">
+          <span>Study music</span>
+          <button onclick="toggleMusic()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1">×</button>
+        </div>
         <div class="music-iframe-wrap">
           <iframe id="ytPlayer" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
@@ -396,9 +399,9 @@ function initMediaPipe() {
   document.getElementById('loadingModels').classList.remove('visible');
 }
 
-// Detection result state
-let _facePresent = false;
-let _faceFull    = false;
+// Detection result state — default true so first seconds aren't lost
+let _facePresent = true;
+let _faceFull    = true;
 let _fingers     = 0;
 let _keypoints   = null;
 
@@ -497,22 +500,33 @@ function drawHand(ctx, kp, w, h) {
 }
 
 // ── Session ticking ────────────────────────────────────────────────────────────
+// Runs every second independently — always accurate regardless of detection speed
+function startSessionTicker() {
+  if (window._tickInterval) clearInterval(window._tickInterval);
+  lastTickTime = Date.now();
+  window._tickInterval = setInterval(() => {
+    if (!sessionActive) { clearInterval(window._tickInterval); return; }
+    const now     = Date.now();
+    const elapsed = (now - lastTickTime) / 1000;
+    lastTickTime  = now;
+
+    if (inBreak) {
+      breakSecs += elapsed;
+      if (Date.now() >= breakEndTime) endBreakInternal();
+      return;
+    }
+
+    // Use latest detection results
+    if (!_facePresent || !_faceFull) {
+      awaySecs += elapsed;
+    } else {
+      effectiveSecs += elapsed;
+    }
+  }, 1000);
+}
+
 function tickSession(facePresent, faceFull) {
-  const now     = Date.now();
-  const elapsed = lastTickTime ? (now - lastTickTime) / 1000 : 0;
-  lastTickTime  = now;
-
-  if (inBreak) {
-    breakSecs += elapsed;
-    if (Date.now() >= breakEndTime) endBreakInternal();
-    return;
-  }
-
-  if (!facePresent || !faceFull) {
-    awaySecs += elapsed;
-  } else {
-    effectiveSecs += elapsed;
-  }
+  // No-op — ticking now handled by startSessionTicker
 }
 
 // ── Gesture handling ───────────────────────────────────────────────────────────
@@ -699,9 +713,10 @@ async function startSession() {
   document.getElementById('btnQuit').classList.add('visible');
   document.getElementById('camTitle').textContent = task + ' · ' + mode;
 
-  if (musicEnabled) document.getElementById('musicCard').classList.add('visible');
+  if (musicEnabled) { document.getElementById('musicCard').style.display = 'block'; document.getElementById('ytPlayer').src = 'https://www.youtube.com/embed/AawLM81gIHo?autoplay=1&controls=1'; }
 
   startCountdown(planned);
+  startSessionTicker();
 
   // Update metrics every second
   if (window._metricsInterval) clearInterval(window._metricsInterval);
@@ -742,6 +757,7 @@ async function _endSession(early) {
   if (_detInterval)             { clearInterval(_detInterval); _detInterval = null; }
   if (breakInterval)            { clearInterval(breakInterval); breakInterval = null; }
   if (window._metricsInterval) { clearInterval(window._metricsInterval); window._metricsInterval = null; }
+  if (window._tickInterval)    { clearInterval(window._tickInterval); window._tickInterval = null; }
 
   // Stop camera
   if (videoStream) {
@@ -751,8 +767,10 @@ async function _endSession(early) {
   document.getElementById('videoEl').style.display    = 'none';
   document.getElementById('videoEl').srcObject        = null;
   document.getElementById('camPlaceholder').style.display = 'flex';
-  document.getElementById('musicCard').classList.remove('visible');
-  document.getElementById('ytPlayer').src = ''; // stop music
+  document.getElementById('musicCard').style.display = 'none';
+  document.getElementById('ytPlayer').src = '';
+  document.getElementById('musicToggle').checked = false;
+  musicEnabled = false;
   document.getElementById('btnQuit').classList.remove('visible');
 
   // Build summary
@@ -814,17 +832,16 @@ function newSession() {
 
 function toggleMusic() {
   musicEnabled = document.getElementById('musicToggle').checked;
-  if (!sessionActive) return;
   const card   = document.getElementById('musicCard');
   const iframe = document.getElementById('ytPlayer');
-  if (musicEnabled) {
-    card.classList.add('visible');
-    if (!iframe.src || iframe.src === window.location.href) {
-      iframe.src = 'https://www.youtube.com/embed/AawLM81gIHo?autoplay=1&controls=1';
-    }
+  if (musicEnabled && sessionActive) {
+    card.style.display = 'block';
+    iframe.src = 'https://www.youtube.com/embed/AawLM81gIHo?autoplay=1&controls=1';
   } else {
-    card.classList.remove('visible');
-    iframe.src = ''; // stop music
+    card.style.display = 'none';
+    iframe.src = '';
+    document.getElementById('musicToggle').checked = false;
+    musicEnabled = false;
   }
 }
 </script>
