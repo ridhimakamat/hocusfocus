@@ -7,10 +7,9 @@
 <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Nunito:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4/face_detection.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js" crossorigin="anonymous"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -19,21 +18,24 @@
   --text:#2d2318;--text2:#7a6455;--text3:#b8a898;
   --rose:#e8827a;--rose2:#d96b62;--rose-dim2:rgba(232,130,122,.18);
   --lav:#9b8ec4;--lav2:#8070b0;--lav-dim2:rgba(155,142,196,.2);
-  --sage:#7aab8e;--sage2:#5e9474;--sage-dim2:rgba(122,171,142,.2);
-  --peach:#f0a882;--peach2:#e08e64;--peach-dim:rgba(240,168,130,.15);
+  --sage:#7aab8e;--sage2:#5e9474;
+  --peach:#f0a882;--peach2:#e08e64;
   --serif:'Fraunces',Georgia,serif;--sans:'Nunito',sans-serif
 }
-html,body{height:100%}
+html,body{height:100%;margin:0}
 body{background:var(--cream);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(160,120,80,.04) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:0}
-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:60px;background:rgba(253,248,242,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:60px;background:rgba(253,248,242,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
 .nav-logo{display:flex;align-items:center;gap:8px;font-family:var(--serif);font-size:18px;font-weight:600;color:var(--text);text-decoration:none}
 .logo-blob{width:24px;height:24px;background:linear-gradient(135deg,var(--rose),var(--lav));border-radius:40% 60% 55% 45%/50% 40% 60% 50%;animation:morph 6s ease-in-out infinite;flex-shrink:0}
 @keyframes morph{0%,100%{border-radius:40% 60% 55% 45%/50% 40% 60% 50%}33%{border-radius:55% 45% 40% 60%/40% 60% 45% 55%}66%{border-radius:45% 55% 60% 40%/60% 45% 55% 40%}}
 .nav-right{display:flex;align-items:center;gap:1.8rem}
 .nav-right a{color:var(--text2);text-decoration:none;font-size:13.5px;font-weight:500;transition:color .2s}
 .nav-right a:hover{color:var(--text)}
-.page{padding:76px 1.5rem 2rem;max-width:1200px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;gap:1.25rem;position:relative;z-index:1}
+/* PAGE */
+.page{padding:76px 1.5rem 2rem;max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:1.25rem;position:relative;z-index:1}
+/* SETUP */
 .setup-card{background:var(--warm1);border:1px solid var(--border);border-radius:20px;padding:2rem 2.5rem}
 .setup-card h2{font-family:var(--serif);font-size:1.6rem;font-weight:500;color:var(--text);margin-bottom:1.5rem}
 .setup-form{display:grid;grid-template-columns:1fr 140px 120px auto;gap:12px;align-items:end}
@@ -41,25 +43,20 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .field label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
 .field input,.field select{background:var(--cream);border:1.5px solid var(--border2);border-radius:10px;padding:10px 14px;font-family:var(--sans);font-size:14px;color:var(--text);outline:none;transition:border-color .2s}
 .field input:focus,.field select:focus{border-color:var(--rose)}
-.music-toggle-row{display:flex;align-items:center;gap:12px;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)}
-.music-toggle-row label{font-size:13px;color:var(--text2);font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px}
-.toggle-switch{position:relative;width:40px;height:22px;flex-shrink:0}
-.toggle-switch input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;inset:0;background:var(--warm3);border-radius:100px;cursor:pointer;transition:background .2s}
-.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s}
-.toggle-switch input:checked+.toggle-slider{background:var(--lav)}
-.toggle-switch input:checked+.toggle-slider::before{transform:translateX(18px)}
-.btn-row{display:flex;gap:8px;align-items:flex-end}
-.btn-start{background:var(--rose);color:#fff;border:none;border-radius:10px;padding:11px 28px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 3px 14px rgba(232,130,122,.35);transition:background .2s,transform .15s}
+.music-row{display:flex;align-items:center;gap:12px;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border)}
+.toggle-wrap{position:relative;width:40px;height:22px;flex-shrink:0;cursor:pointer}
+.toggle-wrap input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--warm3);border-radius:100px;transition:background .2s}
+.toggle-thumb{position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s}
+.toggle-wrap input:checked ~ .toggle-track{background:var(--lav)}
+.toggle-wrap input:checked ~ .toggle-thumb{transform:translateX(18px)}
+/* BUTTONS */
+.btn-start{background:var(--rose);color:#fff;border:none;border-radius:10px;padding:11px 28px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 3px 14px rgba(232,130,122,.35);transition:background .2s,transform .15s;white-space:nowrap}
 .btn-start:hover{background:var(--rose2);transform:translateY(-1px)}
 .btn-start:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-quit{background:transparent;color:var(--rose);border:1.5px solid var(--rose);border-radius:10px;padding:10px 20px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:none;align-items:center;gap:6px}
-.btn-quit:hover{background:var(--rose);color:#fff}
-.btn-quit.visible{display:flex}
-/* Always visible end session button inside tracker */
-.end-session-btn{width:100%;background:transparent;color:var(--rose);border:1.5px solid var(--rose);border-radius:10px;padding:11px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:4px}
-.end-session-btn:hover{background:var(--rose);color:#fff}
+/* TRACKER GRID */
 .tracker-grid{display:grid;grid-template-columns:1fr 360px;gap:1.25rem}
+/* CAM */
 .cam-card{background:var(--warm1);border:1px solid var(--border);border-radius:20px;overflow:hidden}
 .cam-toolbar{background:var(--warm2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:7px}
 .dc{width:10px;height:10px;border-radius:50%}
@@ -67,19 +64,23 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .cam-title{font-size:12px;color:var(--text3);font-weight:500;flex:1;text-align:center}
 .cam-body{position:relative;background:#1a1410;aspect-ratio:16/9;overflow:hidden}
 .cam-body video{width:100%;height:100%;object-fit:cover;display:block;transform:scaleX(-1)}
-.cam-body canvas{position:absolute;top:0;left:0;width:100%;height:100%;transform:scaleX(-1)}
-.cam-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:var(--text3);font-size:14px;font-weight:500}
-.cam-spinner{width:36px;height:36px;border:3px solid var(--warm3);border-top-color:var(--rose);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:4px}
+.cam-body canvas{position:absolute;top:0;left:0;width:100%;height:100%;transform:scaleX(-1);pointer-events:none}
+.cam-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:var(--text3);font-size:14px;font-weight:500;background:#1a1410}
+.cam-spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.15);border-top-color:var(--rose);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.status-badge{position:absolute;top:12px;right:12px;padding:5px 14px;border-radius:100px;font-size:12px;font-weight:600;backdrop-filter:blur(8px);z-index:10}
-.status-badge.focused{background:rgba(122,171,142,.85);color:#fff}
-.status-badge.away{background:rgba(245,166,35,.85);color:#fff}
-.status-badge.on-break{background:rgba(155,142,196,.85);color:#fff}
-.music-card{background:var(--warm1);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:none;margin-top:1.25rem}
-.music-card.visible{display:block}
+.status-badge{position:absolute;top:12px;right:12px;padding:5px 14px;border-radius:100px;font-size:12px;font-weight:600;backdrop-filter:blur(8px);z-index:10;transition:all .3s}
+.status-badge.focused{background:rgba(94,148,116,.9);color:#fff}
+.status-badge.away{background:rgba(200,130,30,.9);color:#fff}
+.status-badge.on-break{background:rgba(128,112,176,.9);color:#fff}
+.status-badge.loading{background:rgba(0,0,0,.5);color:rgba(255,255,255,.7)}
+/* MUSIC CARD */
+.music-card{background:var(--warm1);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:1.25rem}
 .music-header{background:var(--warm2);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;color:var(--text2)}
-.music-iframe-wrap{position:relative;padding-bottom:56.25%;height:0;overflow:hidden}
-.music-iframe-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
+.music-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1;padding:0 2px;transition:color .2s}
+.music-close:hover{color:var(--rose)}
+.music-frame{position:relative;padding-bottom:56.25%;height:0;overflow:hidden}
+.music-frame iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
+/* STATS PANEL */
 .stats-panel{display:flex;flex-direction:column;gap:12px}
 .timer-card{background:var(--warm1);border:1px solid var(--border);border-radius:16px;padding:1.25rem 1.4rem;text-align:center}
 .timer-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
@@ -88,46 +89,54 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 .timer-sub{font-size:11px;color:var(--text3);margin-top:4px}
 .progress-wrap{background:var(--warm1);border:1px solid var(--border);border-radius:16px;padding:1rem 1.4rem}
-.progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);font-weight:500;margin-bottom:8px}
+.progress-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);font-weight:500;margin-bottom:8px}
 .progress-bar{height:8px;background:var(--warm3);border-radius:100px;overflow:hidden}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--sage2));border-radius:100px;transition:width .5s ease;width:0%}
 .stats-mini{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .stat-card{background:var(--warm1);border:1px solid var(--border);border-radius:16px;padding:1.1rem 1.4rem}
-.stat-card-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
-.stat-card-val{font-family:var(--serif);font-size:1.8rem;font-weight:500;line-height:1;margin-bottom:3px}
-.stat-card-val.sage{color:var(--sage2)}.stat-card-val.rose{color:var(--rose)}.stat-card-val.peach{color:var(--peach2)}.stat-card-val.lav{color:var(--lav)}
-.stat-card-sub{font-size:12px;color:var(--text3)}
-.face-warning{background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.3);border-radius:12px;padding:10px 14px;font-size:13px;color:#b8860b;font-weight:500;display:none;align-items:center;gap:8px}
-.face-warning.visible{display:flex}
-.break-banner{background:linear-gradient(135deg,var(--lav-dim2),var(--rose-dim2));border:1px solid rgba(155,142,196,.3);border-radius:16px;padding:1.25rem 1.4rem;text-align:center;display:none}
-.break-banner.visible{display:block}
+.sc-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.sc-val{font-family:var(--serif);font-size:1.8rem;font-weight:500;line-height:1;margin-bottom:3px}
+.sc-val.sage{color:var(--sage2)}.sc-val.rose{color:var(--rose)}.sc-val.peach{color:var(--peach2)}.sc-val.lav{color:var(--lav)}
+.sc-sub{font-size:12px;color:var(--text3)}
+/* FACE WARNING */
+.face-warn{background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:12px;padding:10px 14px;font-size:13px;color:#a07010;display:none;align-items:center;gap:8px}
+.face-warn.on{display:flex}
+/* BREAK BANNER */
+.break-banner{background:linear-gradient(135deg,rgba(155,142,196,.15),rgba(232,130,122,.15));border:1px solid rgba(155,142,196,.3);border-radius:16px;padding:1.25rem 1.4rem;text-align:center;display:none}
+.break-banner.on{display:block}
 .bb-label{font-size:11px;font-weight:600;color:var(--lav2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
 .bb-time{font-family:var(--serif);font-size:2.4rem;font-weight:500;color:var(--lav2);line-height:1}
 .bb-sub{font-size:12px;color:var(--text3);margin-top:4px;margin-bottom:12px}
 .btn-end-break{width:100%;background:var(--rose);color:#fff;border:none;border-radius:10px;padding:11px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
 .btn-end-break:hover{background:var(--rose2)}
+/* GESTURE HINT */
 .gesture-hint{background:var(--warm1);border:1px solid var(--border);border-radius:16px;padding:1rem 1.4rem;display:flex;align-items:center;gap:12px}
 .gh-icon{font-size:1.6rem;line-height:1}
 .gh-text{font-size:13px;color:var(--text2);line-height:1.55}
 .gh-text strong{color:var(--text);font-weight:600}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(45,35,24,.4);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.modal-overlay.visible{display:flex}
+/* END SESSION BUTTON */
+.btn-end-session{width:100%;background:transparent;color:var(--rose);border:1.5px solid var(--rose);border-radius:10px;padding:11px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-end-session:hover{background:var(--rose);color:#fff}
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(45,35,24,.45);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.on{display:flex}
 .modal-box{background:var(--cream);border:1px solid var(--border);border-radius:20px;padding:2rem 2.5rem;max-width:380px;width:90%;text-align:center}
 .modal-icon{font-size:2.5rem;margin-bottom:.75rem}
-.modal-box h3{font-family:var(--serif);font-size:1.4rem;font-weight:500;color:var(--text);margin-bottom:.5rem}
+.modal-box h3{font-family:var(--serif);font-size:1.4rem;font-weight:500;margin-bottom:.5rem}
 .modal-box p{font-size:13.5px;color:var(--text2);line-height:1.7;margin-bottom:1.75rem}
 .modal-btns{display:flex;gap:10px;justify-content:center}
-.modal-cancel{background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 22px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer}
-.modal-confirm{background:var(--rose);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
-.modal-confirm:hover{background:var(--rose2)}
+.btn-modal-cancel{background:transparent;color:var(--text2);border:1.5px solid var(--border2);border-radius:10px;padding:10px 22px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-modal-confirm{background:var(--rose);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-modal-confirm:hover{background:var(--rose2)}
+/* SESSION COMPLETE */
 .session-end{display:none;background:var(--warm1);border:1px solid var(--border);border-radius:20px;padding:3rem 2.5rem;text-align:center}
-.session-end.visible{display:block}
+.session-end.on{display:block}
 .session-end h3{font-family:var(--serif);font-size:2rem;font-weight:500;margin-bottom:.5rem}
 .big-num{font-family:var(--serif);font-size:4rem;font-weight:500;color:var(--sage2);line-height:1;margin:.75rem 0 .25rem}
-.sub{font-size:14px;color:var(--text2);margin-bottom:2rem}
+.end-sub{font-size:14px;color:var(--text2);margin-bottom:2rem}
 .end-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem;max-width:600px;margin-left:auto;margin-right:auto}
 .end-stat{background:var(--cream);border:1px solid var(--border);border-radius:14px;padding:1rem}
-.es-lbl{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.es-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
 .es-val{font-family:var(--serif);font-size:1.5rem;font-weight:500}
 .es-val.rose{color:var(--rose)}.es-val.peach{color:var(--peach2)}.es-val.lav{color:var(--lav)}
 .end-note{font-size:13px;color:var(--text3);margin-bottom:1.75rem;font-style:italic}
@@ -139,25 +148,33 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .score-ring-wrap{display:flex;justify-content:center;margin:1.5rem 0}
 .score-ring{position:relative;width:120px;height:120px}
 .score-ring svg{transform:rotate(-90deg)}
-.score-ring-bg{fill:none;stroke:var(--warm3);stroke-width:10}
-.score-ring-fill{fill:none;stroke:var(--sage);stroke-width:10;stroke-linecap:round;stroke-dasharray:339.3;stroke-dashoffset:339.3;transition:stroke-dashoffset 1.5s ease}
-.score-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.score-ring-num{font-family:var(--serif);font-size:1.6rem;font-weight:500;color:var(--text);line-height:1}
-.score-ring-lbl{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
-.loading-models{background:var(--warm1);border:1px solid var(--border);border-radius:16px;padding:1.25rem 1.4rem;text-align:center;display:none}
-.loading-models.visible{display:block}
-.lm-text{font-size:13px;color:var(--text2);margin-top:8px}
+.ring-bg{fill:none;stroke:var(--warm3);stroke-width:10}
+.ring-fill{fill:none;stroke:var(--sage);stroke-width:10;stroke-linecap:round;stroke-dasharray:339.3;stroke-dashoffset:339.3;transition:stroke-dashoffset 1.5s ease}
+.ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-num{font-family:var(--serif);font-size:1.6rem;font-weight:500;color:var(--text);line-height:1}
+.ring-lbl{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
 @media(max-width:768px){
-  nav{padding:0 1.5rem}
   .page{padding:76px 1rem 2rem}
   .setup-form{grid-template-columns:1fr 1fr}
   .tracker-grid{grid-template-columns:1fr}
-  .stats-mini{grid-template-columns:1fr 1fr}
   .end-grid{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
 <body>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal-box">
+    <div class="modal-icon">⏸</div>
+    <h3>End session early?</h3>
+    <p>Your session will end now and all analytics will be saved.</p>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeModal()">Keep going</button>
+      <button class="btn-modal-confirm" onclick="confirmEnd()">End & save</button>
+    </div>
+  </div>
+</div>
 
 <nav>
   <a href="/" class="nav-logo"><div class="logo-blob"></div>HocusFocus</a>
@@ -169,22 +186,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
   </div>
 </nav>
 
-<!-- QUIT MODAL -->
-<div class="modal-overlay" id="quitModal">
-  <div class="modal-box">
-    <div class="modal-icon">⏸</div>
-    <h3>End session early?</h3>
-    <p>Your session will end now and all analytics will be saved.</p>
-    <div class="modal-btns">
-      <button class="modal-cancel" onclick="closeQuitModal()">Keep going</button>
-      <button class="modal-confirm" onclick="confirmQuit()">End & save</button>
-    </div>
-  </div>
-</div>
-
 <div class="page">
 
-  <!-- SETUP -->
+  <!-- SETUP CARD -->
   <div class="setup-card" id="setupCard">
     <h2>New session</h2>
     <div class="setup-form">
@@ -203,25 +207,29 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
         <label>Planned (min)</label>
         <input type="number" id="plannedInput" value="60" min="1" max="480">
       </div>
-      <div class="btn-row">
+      <div>
         <button class="btn-start" id="btnStart" onclick="startSession()">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polygon points="4,2 12,7 4,12" fill="currentColor"/></svg>
+          <svg width="12" height="12" viewBox="0 0 12 12"><polygon points="3,1 11,6 3,11" fill="currentColor"/></svg>
           Start
         </button>
-        <button class="btn-quit" id="btnQuit" onclick="openQuitModal()">✕ End session</button>
       </div>
     </div>
-    <div class="music-toggle-row">
-      <label>
-        <span class="toggle-switch"><input type="checkbox" id="musicToggle" onchange="toggleMusic()"><span class="toggle-slider"></span></span>
-        Play study music during session
+    <!-- MUSIC TOGGLE -->
+    <div class="music-row">
+      <label class="toggle-wrap" for="musicToggle">
+        <input type="checkbox" id="musicToggle">
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
       </label>
-      <a href="https://youtu.be/AawLM81gIHo" target="_blank" style="font-size:12px;color:var(--text3);margin-left:auto;font-style:italic;text-decoration:none;border-bottom:1px dotted var(--text3)">to study like a medieval philosopher having the truth revealed by divine grace ↗</a>
+      <span style="font-size:13px;color:var(--text2);font-weight:500;cursor:pointer" onclick="document.getElementById('musicToggle').click()">Play study music during session</span>
+      <a href="https://youtu.be/AawLM81gIHo" target="_blank" style="margin-left:auto;font-size:12px;color:var(--text3);font-style:italic;text-decoration:none;border-bottom:1px dotted var(--text3)">to study like a medieval philosopher... ↗</a>
     </div>
   </div>
 
-  <!-- TRACKER -->
+  <!-- LIVE TRACKER -->
   <div class="tracker-grid" id="trackerGrid" style="display:none">
+
+    <!-- LEFT COLUMN: webcam + music -->
     <div>
       <div class="cam-card">
         <div class="cam-toolbar">
@@ -231,84 +239,91 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
         <div class="cam-body" id="camBody">
           <div class="cam-placeholder" id="camPlaceholder">
             <div class="cam-spinner"></div>
-            <span>Starting camera...</span>
+            <span style="color:rgba(255,255,255,.5);font-size:13px">Starting camera...</span>
           </div>
           <video id="videoEl" autoplay playsinline muted style="display:none"></video>
-          <canvas id="overlayCanvas"></canvas>
-          <div class="status-badge focused" id="statusBadge">Loading...</div>
+          <canvas id="overlay"></canvas>
+          <div class="status-badge loading" id="statusBadge">Loading...</div>
         </div>
       </div>
-      <div class="loading-models" id="loadingModels">
-        <div class="cam-spinner" style="margin:0 auto"></div>
-        <div class="lm-text">Loading detection models — first load takes ~15 seconds...</div>
-      </div>
+
+      <!-- MUSIC CARD — hidden until toggled on during session -->
       <div class="music-card" id="musicCard" style="display:none">
-        <div class="music-header" style="padding:10px 14px;background:var(--warm2);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text2);display:flex;justify-content:space-between;align-items:center">
+        <div class="music-header">
           <span>Study music</span>
-          <button onclick="toggleMusic()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1">×</button>
+          <button class="music-close" onclick="closeMusic()" title="Stop music">×</button>
         </div>
-        <div class="music-iframe-wrap">
-          <iframe id="ytPlayer" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        <div class="music-frame">
+          <iframe id="ytFrame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
       </div>
     </div>
 
+    <!-- RIGHT COLUMN: stats -->
     <div class="stats-panel">
+
+      <!-- Countdown -->
       <div class="timer-card">
         <div class="timer-label">Time remaining</div>
         <div class="timer-val" id="timerVal">60:00</div>
         <div class="timer-sub">of <span id="timerPlanned">60</span> min planned</div>
       </div>
 
-      <div class="face-warning" id="faceWarning">
-        <span>👤</span>
-        <span>Please move so your full face is visible in the camera.</span>
+      <!-- Face warning -->
+      <div class="face-warn" id="faceWarn">
+        <span>👤</span><span>Please move so your full face is visible in the camera.</span>
       </div>
 
+      <!-- Break banner -->
       <div class="break-banner" id="breakBanner">
-        <div class="bb-label">Break time</div>
+        <div class="bb-label">Break time 🌿</div>
         <div class="bb-time" id="breakTime">3:00</div>
         <div class="bb-sub">Session resumes automatically</div>
         <button class="btn-end-break" onclick="endBreakEarly()">✓ End break now</button>
       </div>
 
+      <!-- Progress bar -->
       <div class="progress-wrap">
-        <div class="progress-label">
+        <div class="progress-labels">
           <span>Effective progress</span>
           <span id="progressLabel">0 / 60 min</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       </div>
 
+      <!-- 4 stat cards -->
       <div class="stats-mini">
         <div class="stat-card">
-          <div class="stat-card-label">Effective</div>
-          <div class="stat-card-val sage" id="statEffective">0.0m</div>
-          <div class="stat-card-sub">of <span id="statPlanned">60</span> min</div>
+          <div class="sc-label">Effective</div>
+          <div class="sc-val sage" id="statEff">0.0m</div>
+          <div class="sc-sub">of <span id="statPlan">60</span> min</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-label">Focus score</div>
-          <div class="stat-card-val lav" id="statScore">0%</div>
-          <div class="stat-card-sub">effective ÷ planned</div>
+          <div class="sc-label">Focus score</div>
+          <div class="sc-val lav" id="statScore">0%</div>
+          <div class="sc-sub">effective ÷ planned</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-label">Breaks</div>
-          <div class="stat-card-val peach" id="statBreaks">0m</div>
-          <div class="stat-card-sub" id="statBreakCount">0 taken</div>
+          <div class="sc-label">Breaks</div>
+          <div class="sc-val peach" id="statBreak">0m</div>
+          <div class="sc-sub" id="statBreakCount">0 taken</div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-label">Away time</div>
-          <div class="stat-card-val rose" id="statAway">0.0m</div>
-          <div class="stat-card-sub">not counted</div>
+          <div class="sc-label">Away time</div>
+          <div class="sc-val rose" id="statAway">0.0m</div>
+          <div class="sc-sub">not counted</div>
         </div>
       </div>
 
+      <!-- Gesture hint -->
       <div class="gesture-hint">
         <span class="gh-icon" id="gestureIcon">✋</span>
-        <div class="gh-text"><strong>Gesture breaks:</strong> hold 1–5 fingers up for 1.5 seconds — the count sets your break in minutes.</div>
+        <div class="gh-text"><strong>Gesture breaks:</strong> hold 1–5 fingers to camera for 1.5 s — the count = break minutes.</div>
       </div>
 
-      <button class="end-session-btn" onclick="openQuitModal()">✕ End session</button>
+      <!-- End session button -->
+      <button class="btn-end-session" onclick="openModal()">✕ End session</button>
+
     </div>
   </div>
 
@@ -319,21 +334,21 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
     <div class="score-ring-wrap">
       <div class="score-ring">
         <svg viewBox="0 0 120 120" width="120" height="120">
-          <circle class="score-ring-bg" cx="60" cy="60" r="54"/>
-          <circle class="score-ring-fill" id="scoreRingFill" cx="60" cy="60" r="54"/>
+          <circle class="ring-bg" cx="60" cy="60" r="54"/>
+          <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="54"/>
         </svg>
-        <div class="score-ring-text">
-          <div class="score-ring-num" id="ringScore">0%</div>
-          <div class="score-ring-lbl">Focus</div>
+        <div class="ring-text">
+          <div class="ring-num" id="ringScore">0%</div>
+          <div class="ring-lbl">Focus</div>
         </div>
       </div>
     </div>
-    <div class="big-num" id="endEffective">—</div>
-    <div class="sub">effective minutes</div>
+    <div class="big-num" id="endEff">—</div>
+    <div class="end-sub">effective minutes</div>
     <div class="end-grid">
-      <div class="end-stat"><div class="es-lbl">Planned</div><div class="es-val" id="endPlanned">—</div></div>
-      <div class="end-stat"><div class="es-lbl">Breaks</div><div class="es-val peach" id="endBreak">—</div></div>
-      <div class="end-stat"><div class="es-lbl">Away time</div><div class="es-val rose" id="endAway">—</div></div>
+      <div class="end-stat"><div class="es-label">Planned</div><div class="es-val" id="endPlan">—</div></div>
+      <div class="end-stat"><div class="es-label">Breaks</div><div class="es-val peach" id="endBreak">—</div></div>
+      <div class="end-stat"><div class="es-label">Away</div><div class="es-val rose" id="endAway">—</div></div>
     </div>
     <p class="end-note" id="endNote"></p>
     <div class="end-actions">
@@ -345,330 +360,291 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 </div>
 
 <script>
+'use strict';
+
+// ── Constants ──────────────────────────────────────────────────────────────────
+const HOLD_SECS    = 1.5;   // seconds to hold gesture
+const STABLE_FRAMES = 3;    // consecutive frames needed
+
 // ── State ──────────────────────────────────────────────────────────────────────
-let sessionActive   = false;
-let musicEnabled    = false;
-let plannedSecs     = 0;
-let sessionStartTs  = 0;
-let countdownTimer  = null;
-let autoEndFired    = false;
+let active        = false;
+let plannedSecs   = 0;
+let effectiveSecs = 0;
+let awaySecs      = 0;
+let breakSecs     = 0;
+let breakCount    = 0;
+let onBreak       = false;
+let breakEndTs    = 0;
+let lastTick      = 0;
 
-// Detection state
-let faceDetector    = null;
-let handDetector    = null;
-let detectionLoop   = null;
-let videoStream     = null;
-let modelsLoaded    = false;
+let faceOk        = true;   // default true until detection starts
+let faceFull      = true;
+let fingerCount   = 0;
+let handKps       = null;
 
-// Session timers (in seconds)
-let effectiveSecs   = 0;
-let awaySecs        = 0;
-let breakSecs       = 0;
-let breakCount      = 0;
-let lastTickTime    = null;
+let stableCount   = 0;
+let lastFingers   = 0;
+let holdStart     = 0;
+let gestureDone   = false;
 
-// Gesture state
-let inBreak         = false;
-let breakEndTime    = null;
-let lastFingers     = 0;
-let stableCount     = 0;
-let holdStart       = null;
-let gestureFired    = false;
-const HOLD_REQUIRED = 1.5;
-const STABLE_FRAMES = 2;
+let sessionStartTs = 0;
+let autoEnded     = false;
 
-// Break interval
-let breakInterval   = null;
+// Intervals
+let tickIv        = null;
+let countdownIv   = null;
+let breakIv       = null;
+let detIv         = null;
 
-// ── MediaPipe Setup ────────────────────────────────────────────────────────────
-let mpFace = null;
-let mpHands = null;
+// MediaPipe
+let mpFace        = null;
+let mpHands       = null;
+let mpReady       = false;
+let videoStream   = null;
 
-function initMediaPipe() {
-  // Face Detection
-  mpFace = new FaceDetection({locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${f}`});
-  mpFace.setOptions({ model: 'short', minDetectionConfidence: 0.5 });
-  mpFace.onResults(onFaceResults);
+// ── MediaPipe init ─────────────────────────────────────────────────────────────
+function initMP() {
+  try {
+    mpFace = new FaceDetection({
+      locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4/${f}`
+    });
+    mpFace.setOptions({ model: 'short', minDetectionConfidence: 0.5 });
+    mpFace.onResults(r => {
+      faceOk   = !!(r.detections && r.detections.length > 0);
+      faceFull = false;
+      if (faceOk && r.detections[0].boundingBox) {
+        const b = r.detections[0].boundingBox;
+        const m = 0.04;
+        faceFull = (b.xCenter-b.width/2 > m) && (b.xCenter+b.width/2 < 1-m) &&
+                   (b.yCenter-b.height/2 > m) && (b.yCenter+b.height/2 < 1-m);
+      }
+    });
 
-  // Hands
-  mpHands = new Hands({locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
-  mpHands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
-  mpHands.onResults(onHandResults);
+    mpHands = new Hands({
+      locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${f}`
+    });
+    mpHands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 0,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+    mpHands.onResults(r => {
+      if (r.multiHandLandmarks && r.multiHandLandmarks.length > 0) {
+        handKps    = r.multiHandLandmarks[0];
+        fingerCount = handSpread(handKps) > 0.08 ? countFingers(handKps) : 0;
+      } else {
+        handKps    = null;
+        fingerCount = 0;
+      }
+      drawHand();
+    });
 
-  modelsLoaded = true;
-  document.getElementById('loadingModels').classList.remove('visible');
-}
-
-// Detection result state — default true so first seconds aren't lost
-let _facePresent = true;
-let _faceFull    = true;
-let _fingers     = 0;
-let _keypoints   = null;
-
-function onFaceResults(results) {
-  _facePresent = results.detections && results.detections.length > 0;
-  if (_facePresent) {
-    const box = results.detections[0].boundingBox;
-    const m   = 0.05;
-    _faceFull = box.xCenter - box.width/2 > m && box.xCenter + box.width/2 < 1-m &&
-                box.yCenter - box.height/2 > m && box.yCenter + box.height/2 < 1-m;
-  } else {
-    _faceFull = false;
+    mpReady = true;
+  } catch(e) {
+    console.warn('MediaPipe init error:', e);
+    mpReady = true; // allow session to run without detection
   }
 }
 
-function onHandResults(results) {
-  if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-    _keypoints = results.multiHandLandmarks[0];
-    if (handVisible(_keypoints)) {
-      _fingers = countFingers(_keypoints);
-    } else {
-      _fingers = 0;
-    }
-  } else {
-    _keypoints = null;
-    _fingers   = 0;
-  }
-}
-
-window.addEventListener('load', () => {
-  try { initMediaPipe(); } catch(e) { console.error('MediaPipe init failed:', e); modelsLoaded = true; }
-});
+window.addEventListener('load', initMP);
 
 // ── Finger counting ────────────────────────────────────────────────────────────
+function handSpread(kp) {
+  const xs = kp.map(p => p.x), ys = kp.map(p => p.y);
+  return (Math.max(...xs)-Math.min(...xs)) + (Math.max(...ys)-Math.min(...ys));
+}
+
 function countFingers(kp) {
   if (!kp || kp.length < 21) return 0;
-  let count = 0;
-  // Thumb: tip further from wrist in x than IP joint
-  const palmCx = (kp[5].x + kp[17].x) / 2;
-  if (Math.abs(kp[4].x - palmCx) > Math.abs(kp[3].x - palmCx)) count++;
-  // Four fingers: tip y < pip y means extended (y increases downward)
-  [[8,6],[12,10],[16,14],[20,18]].forEach(([t,p]) => { if (kp[t].y < kp[p].y) count++; });
-  return count;
+  let n = 0;
+  // Thumb: tip(4) further from palm midpoint than IP(3)
+  const pmx = (kp[5].x + kp[17].x) / 2;
+  if (Math.abs(kp[4].x - pmx) > Math.abs(kp[3].x - pmx)) n++;
+  // Fingers: tip.y < pip.y means extended
+  [[8,6],[12,10],[16,14],[20,18]].forEach(([t,p]) => { if (kp[t].y < kp[p].y) n++; });
+  return n;
 }
 
-function handVisible(keypoints) {
-  if (!keypoints || keypoints.length < 21) return false;
-  // MediaPipe landmarks are normalised 0-1
-  const xs = keypoints.map(k => k.x);
-  const ys = keypoints.map(k => k.y);
-  const spread = (Math.max(...xs) - Math.min(...xs)) + (Math.max(...ys) - Math.min(...ys));
-  return spread > 0.1; // hand must span 10% of frame
-}
-
-// ── Detection loop ─────────────────────────────────────────────────────────────
-let _detInterval = null;
-
-async function runDetection() {
-  if (!sessionActive || !modelsLoaded) return;
+// ── Draw hand skeleton ─────────────────────────────────────────────────────────
+function drawHand() {
+  const canvas = document.getElementById('overlay');
   const video  = document.getElementById('videoEl');
-  const canvas = document.getElementById('overlayCanvas');
-  const ctx    = canvas.getContext('2d');
-  canvas.width  = video.videoWidth  || 640;
-  canvas.height = video.videoHeight || 480;
+  if (!canvas || !video.videoWidth) return;
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!handKps) return;
 
+  const W = canvas.width, H = canvas.height;
+  const conns = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],
+                 [0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],
+                 [0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
+  ctx.strokeStyle = 'rgba(155,142,196,.8)';
+  ctx.lineWidth = 2;
+  conns.forEach(([a,b]) => {
+    if (!handKps[a]||!handKps[b]) return;
+    ctx.beginPath();
+    ctx.moveTo(handKps[a].x*W, handKps[a].y*H);
+    ctx.lineTo(handKps[b].x*W, handKps[b].y*H);
+    ctx.stroke();
+  });
+  ctx.fillStyle = 'rgba(232,130,122,.9)';
+  handKps.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x*W, p.y*H, 4, 0, Math.PI*2);
+    ctx.fill();
+  });
+}
+
+// ── Detection tick (runs every 250ms) ─────────────────────────────────────────
+async function detect() {
+  if (!active || !mpReady) return;
+  const video = document.getElementById('videoEl');
+  if (!video || !video.videoWidth || video.readyState < 2) return;
   try { await mpFace.send({image: video}); } catch(e) {}
   try { await mpHands.send({image: video}); } catch(e) {}
-
-  // Draw hand skeleton if detected
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (_keypoints) drawHand(ctx, _keypoints, canvas.width, canvas.height);
-
-  handleGesture(_fingers);
-  tickSession(_facePresent, _faceFull);
-  updateUI(_facePresent, _faceFull, _fingers);
+  handleGesture(fingerCount);
+  updateBadge();
 }
 
-function drawHand(ctx, kp, w, h) {
-  if (!kp) return;
-  const conns = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
-  ctx.strokeStyle = 'rgba(155,142,196,0.8)';
-  ctx.lineWidth   = 2;
-  for (const [a,b] of conns) {
-    if (!kp[a] || !kp[b]) continue;
-    ctx.beginPath();
-    ctx.moveTo(kp[a].x * w, kp[a].y * h);
-    ctx.lineTo(kp[b].x * w, kp[b].y * h);
-    ctx.stroke();
-  }
-  ctx.fillStyle = 'rgba(232,130,122,0.9)';
-  for (const p of kp) {
-    ctx.beginPath();
-    ctx.arc(p.x * w, p.y * h, 4, 0, Math.PI*2);
-    ctx.fill();
-  }
-}
-
-// ── Session ticking ────────────────────────────────────────────────────────────
-// Runs every second independently — always accurate regardless of detection speed
-function startSessionTicker() {
-  if (window._tickInterval) clearInterval(window._tickInterval);
-  lastTickTime = Date.now();
-  window._tickInterval = setInterval(() => {
-    if (!sessionActive) { clearInterval(window._tickInterval); return; }
-    const now     = Date.now();
-    const elapsed = (now - lastTickTime) / 1000;
-    lastTickTime  = now;
-
-    if (inBreak) {
-      breakSecs += elapsed;
-      if (Date.now() >= breakEndTime) endBreakInternal();
-      return;
-    }
-
-    // Use latest detection results
-    if (!_facePresent || !_faceFull) {
-      awaySecs += elapsed;
-    } else {
-      effectiveSecs += elapsed;
-    }
-  }, 1000);
-}
-
-function tickSession(facePresent, faceFull) {
-  // No-op — ticking now handled by startSessionTicker
-}
-
-// ── Gesture handling ───────────────────────────────────────────────────────────
-function handleGesture(fingers) {
-  if (inBreak) {
-    lastFingers = 0; stableCount = 0; holdStart = null; gestureFired = false;
-    return;
-  }
-
-  if (fingers > 0) {
-    if (fingers === lastFingers) {
+// ── Gesture logic ──────────────────────────────────────────────────────────────
+function handleGesture(f) {
+  if (onBreak) { resetGesture(); return; }
+  if (f > 0) {
+    if (f === lastFingers) {
       stableCount++;
       if (stableCount >= STABLE_FRAMES) {
         if (!holdStart) holdStart = Date.now();
         const held = (Date.now() - holdStart) / 1000;
-        if (!gestureFired && held >= HOLD_REQUIRED) {
-          const mins = Math.min(fingers, 5);
-          startBreak(mins);
-          gestureFired = true;
+        if (!gestureDone && held >= HOLD_SECS) {
+          triggerBreak(Math.min(f, 5));
+          gestureDone = true;
         }
       }
     } else {
-      lastFingers  = fingers;
-      stableCount  = 1;
-      holdStart    = null;
-      gestureFired = false;
+      lastFingers = f;
+      stableCount = 1;
+      holdStart   = 0;
+      gestureDone = false;
     }
   } else {
-    lastFingers  = 0;
-    stableCount  = 0;
-    holdStart    = null;
-    gestureFired = false;
+    resetGesture();
   }
 }
 
-function startBreak(minutes) {
-  inBreak      = true;
-  breakEndTime = Date.now() + minutes * 60 * 1000;
+function resetGesture() {
+  lastFingers = 0; stableCount = 0; holdStart = 0; gestureDone = false;
+}
+
+// ── Break ──────────────────────────────────────────────────────────────────────
+function triggerBreak(mins) {
+  onBreak    = true;
+  breakEndTs = Date.now() + mins * 60000;
   breakCount++;
-  showBreakBanner(minutes * 60);
-}
-
-function endBreakInternal() {
-  inBreak = false;
-  clearBreakBanner();
-}
-
-async function endBreakEarly() {
-  inBreak = false;
-  clearBreakBanner();
-}
-
-// ── UI updates ─────────────────────────────────────────────────────────────────
-function updateUI(facePresent, faceFull, fingers) {
-  // face warning
-  const fw = document.getElementById('faceWarning');
-  if (facePresent && !faceFull) fw.classList.add('visible');
-  else fw.classList.remove('visible');
-
-  // status badge
-  const badge = document.getElementById('statusBadge');
-  if (inBreak) {
-    badge.textContent = 'On break';
-    badge.className   = 'status-badge on-break';
-  } else if (!facePresent) {
-    badge.textContent = 'Away';
-    badge.className   = 'status-badge away';
-  } else if (!faceFull) {
-    badge.textContent = 'Move closer';
-    badge.className   = 'status-badge away';
-  } else if (fingers > 0 && stableCount >= STABLE_FRAMES) {
-    const pct = holdStart ? Math.min(100, Math.round((Date.now()-holdStart)/1000/HOLD_REQUIRED*100)) : 0;
-    badge.textContent = `${fingers} finger${fingers>1?'s':''} — ${pct}%`;
-    badge.className   = 'status-badge on-break';
-    document.getElementById('gestureIcon').textContent = ['','☝️','✌️','🤟','🖖','✋'][Math.min(fingers,5)];
-  } else {
-    badge.textContent = 'Focused';
-    badge.className   = 'status-badge focused';
-    document.getElementById('gestureIcon').textContent = '✋';
-  }
-
-  // stats
-  const eff   = effectiveSecs / 60;
-  const away  = awaySecs      / 60;
-  const brk   = breakSecs     / 60;
-  const plan  = plannedSecs   / 60;
-  const score = plan > 0 ? Math.min((eff/plan)*100, 100) : 0;
-
-  document.getElementById('statEffective').textContent  = eff.toFixed(1)  + 'm';
-  document.getElementById('statScore').textContent      = score.toFixed(0) + '%';
-  document.getElementById('statBreaks').textContent     = brk.toFixed(1)  + 'm';
-  document.getElementById('statBreakCount').textContent = breakCount + ' taken';
-  document.getElementById('statAway').textContent       = away.toFixed(1) + 'm';
-  document.getElementById('progressLabel').textContent  = eff.toFixed(1)  + ' / ' + plan.toFixed(0) + ' min';
-  document.getElementById('progressFill').style.width   = score + '%';
-  document.getElementById('statPlanned').textContent    = plan.toFixed(0);
-}
-
-// ── Break banner ───────────────────────────────────────────────────────────────
-function showBreakBanner(seconds) {
-  document.getElementById('breakBanner').classList.add('visible');
-  if (breakInterval) clearInterval(breakInterval);
-  let rem = Math.ceil(seconds);
+  resetGesture();
+  // show banner with countdown
+  document.getElementById('breakBanner').classList.add('on');
+  if (breakIv) clearInterval(breakIv);
+  let rem = mins * 60;
   const tick = () => {
-    if (rem <= 0 || !inBreak) { clearBreakBanner(); return; }
+    if (!onBreak || rem <= 0) { finishBreak(); return; }
     const m = Math.floor(rem/60), s = rem%60;
-    document.getElementById('breakTime').textContent = m + ':' + String(s).padStart(2,'0');
+    document.getElementById('breakTime').textContent = m+':'+String(s).padStart(2,'0');
     rem--;
   };
   tick();
-  breakInterval = setInterval(tick, 1000);
+  breakIv = setInterval(tick, 1000);
 }
 
-function clearBreakBanner() {
-  if (breakInterval) { clearInterval(breakInterval); breakInterval = null; }
-  document.getElementById('breakBanner').classList.remove('visible');
+function finishBreak() {
+  onBreak = false;
+  if (breakIv) { clearInterval(breakIv); breakIv = null; }
+  document.getElementById('breakBanner').classList.remove('on');
 }
 
-// ── Countdown timer ────────────────────────────────────────────────────────────
-function startCountdown(minutes) {
-  plannedSecs    = minutes * 60;
-  sessionStartTs = Date.now();
-  autoEndFired   = false;
-  document.getElementById('timerPlanned').textContent = minutes;
-  document.getElementById('statPlanned').textContent  = minutes;
+function endBreakEarly() { finishBreak(); }
 
-  if (countdownTimer) clearInterval(countdownTimer);
-  countdownTimer = setInterval(() => {
-    const elapsed = (Date.now() - sessionStartTs) / 1000;
-    const rem     = Math.max(plannedSecs - elapsed, 0);
-    const m       = Math.floor(rem/60);
-    const s       = Math.floor(rem%60);
-    const tv      = document.getElementById('timerVal');
-    tv.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-    if (rem <= 60) tv.classList.add('ending');
-    else           tv.classList.remove('ending');
-    if (rem <= 0 && !autoEndFired) {
-      autoEndFired = true;
-      clearInterval(countdownTimer);
-      _endSession(false);
+// ── Session ticker (every second) ─────────────────────────────────────────────
+function startTicker() {
+  if (tickIv) clearInterval(tickIv);
+  lastTick = Date.now();
+  tickIv = setInterval(() => {
+    if (!active) { clearInterval(tickIv); return; }
+    const now = Date.now();
+    const dt  = (now - lastTick) / 1000;
+    lastTick  = now;
+    if (onBreak) {
+      breakSecs += dt;
+      if (now >= breakEndTs) finishBreak();
+    } else if (!faceOk || !faceFull) {
+      awaySecs += dt;
+    } else {
+      effectiveSecs += dt;
     }
+    updateStats();
+  }, 1000);
+}
+
+// ── Countdown ─────────────────────────────────────────────────────────────────
+function startCountdown(mins) {
+  plannedSecs  = mins * 60;
+  sessionStartTs = Date.now();
+  autoEnded    = false;
+  document.getElementById('timerPlanned').textContent = mins;
+  document.getElementById('statPlan').textContent     = mins;
+  if (countdownIv) clearInterval(countdownIv);
+  countdownIv = setInterval(() => {
+    const rem = Math.max(plannedSecs - (Date.now()-sessionStartTs)/1000, 0);
+    const m   = Math.floor(rem/60), s = Math.floor(rem%60);
+    const tv  = document.getElementById('timerVal');
+    tv.textContent = String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    if (rem <= 60) tv.classList.add('ending');
+    else tv.classList.remove('ending');
+    if (rem <= 0 && !autoEnded) { autoEnded = true; clearInterval(countdownIv); endSession(false); }
   }, 500);
+}
+
+// ── Update stats ───────────────────────────────────────────────────────────────
+function updateStats() {
+  const plan  = plannedSecs / 60;
+  const eff   = effectiveSecs / 60;
+  const away  = awaySecs / 60;
+  const brk   = breakSecs / 60;
+  const score = plan > 0 ? Math.min(eff/plan*100, 100) : 0;
+  document.getElementById('statEff').textContent        = eff.toFixed(1)+'m';
+  document.getElementById('statScore').textContent      = score.toFixed(0)+'%';
+  document.getElementById('statBreak').textContent      = brk.toFixed(1)+'m';
+  document.getElementById('statBreakCount').textContent = breakCount+' taken';
+  document.getElementById('statAway').textContent       = away.toFixed(1)+'m';
+  document.getElementById('progressLabel').textContent  = eff.toFixed(1)+' / '+plan.toFixed(0)+' min';
+  document.getElementById('progressFill').style.width   = score+'%';
+}
+
+// ── Status badge ───────────────────────────────────────────────────────────────
+function updateBadge() {
+  const badge = document.getElementById('statusBadge');
+  const gi    = document.getElementById('gestureIcon');
+  if (onBreak) {
+    badge.textContent = 'On break'; badge.className = 'status-badge on-break';
+  } else if (!faceOk) {
+    badge.textContent = 'Away'; badge.className = 'status-badge away';
+  } else if (!faceFull) {
+    badge.textContent = 'Move closer'; badge.className = 'status-badge away';
+  } else if (fingerCount > 0 && stableCount >= STABLE_FRAMES) {
+    const pct = holdStart ? Math.min(100, Math.round((Date.now()-holdStart)/1000/HOLD_SECS*100)) : 0;
+    badge.textContent = fingerCount+' finger'+(fingerCount>1?'s':'')+' — '+pct+'%';
+    badge.className   = 'status-badge on-break';
+    gi.textContent    = ['','☝️','✌️','🤟','🖖','✋'][Math.min(fingerCount,5)];
+    return;
+  } else {
+    badge.textContent = 'Focused'; badge.className = 'status-badge focused';
+  }
+  gi.textContent = '✋';
+  // face warning
+  const fw = document.getElementById('faceWarn');
+  if (faceOk && !faceFull) fw.classList.add('on'); else fw.classList.remove('on');
 }
 
 // ── Start session ──────────────────────────────────────────────────────────────
@@ -676,123 +652,104 @@ async function startSession() {
   const task    = document.getElementById('taskInput').value.trim() || 'Work session';
   const mode    = document.getElementById('modeInput').value;
   const planned = parseInt(document.getElementById('plannedInput').value) || 60;
+  const btn     = document.getElementById('btnStart');
+  const wantMusic = document.getElementById('musicToggle').checked;
 
-  document.getElementById('btnStart').disabled = true;
+  btn.disabled = true;
 
-  // Request camera
+  // Reset all counters
+  effectiveSecs = 0; awaySecs = 0; breakSecs = 0; breakCount = 0;
+  onBreak = false; resetGesture();
+  faceOk = true; faceFull = true;
+
+  // Get camera
   try {
-    videoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-    const video = document.getElementById('videoEl');
-    video.srcObject = videoStream;
-    await new Promise(r => video.onloadedmetadata = r);
-    video.play();
+    videoStream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+    const vid = document.getElementById('videoEl');
+    vid.srcObject = videoStream;
+    await new Promise(res => { vid.onloadedmetadata = res; });
+    await vid.play();
     document.getElementById('camPlaceholder').style.display = 'none';
-    video.style.display = 'block';
+    vid.style.display = 'block';
+    document.getElementById('statusBadge').textContent  = 'Focused';
+    document.getElementById('statusBadge').className    = 'status-badge focused';
   } catch(e) {
     alert('Camera access denied. Please allow camera access and try again.');
-    document.getElementById('btnStart').disabled = false;
+    btn.disabled = false;
     return;
   }
 
-  // Reset session state
-  effectiveSecs = 0; awaySecs = 0; breakSecs = 0; breakCount = 0;
-  inBreak = false; lastTickTime = Date.now();
-  lastFingers = 0; stableCount = 0; holdStart = null; gestureFired = false;
+  // Tell server
+  try {
+    await fetch('/api/start', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({task, mode, planned})
+    });
+  } catch(e) {}
 
-  // Save to server
-  await fetch('/api/start', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({task, mode, planned})
-  });
-
-  sessionActive = true;
-  autoEndFired  = false;
-  document.getElementById('setupCard').style.display   = 'none';
-  document.getElementById('trackerGrid').style.display = 'grid';
-  document.getElementById('sessionEnd').classList.remove('visible');
-  document.getElementById('btnQuit').classList.add('visible');
+  active = true;
+  document.getElementById('setupCard').style.display    = 'none';
+  document.getElementById('trackerGrid').style.display  = 'grid';
+  document.getElementById('sessionEnd').classList.remove('on');
   document.getElementById('camTitle').textContent = task + ' · ' + mode;
 
-  if (musicEnabled) { document.getElementById('musicCard').style.display = 'block'; document.getElementById('ytPlayer').src = 'https://www.youtube.com/embed/AawLM81gIHo?autoplay=1&controls=1'; }
+  // Music — only start if toggle was ON
+  if (wantMusic) {
+    document.getElementById('musicCard').style.display = 'block';
+    document.getElementById('ytFrame').src = 'https://www.youtube.com/embed/AawLM81gIHo?autoplay=1&controls=1';
+  }
 
   startCountdown(planned);
-  startSessionTicker();
+  startTicker();
 
-  // Update metrics every second
-  if (window._metricsInterval) clearInterval(window._metricsInterval);
-  window._metricsInterval = setInterval(() => {
-    if (!sessionActive) { clearInterval(window._metricsInterval); return; }
-    const plan  = plannedSecs / 60;
-    const eff   = effectiveSecs / 60;
-    const away  = awaySecs     / 60;
-    const brk   = breakSecs    / 60;
-    const score = plan > 0 ? Math.min((eff/plan)*100, 100) : 0;
-    document.getElementById('statEffective').textContent  = eff.toFixed(1)   + 'm';
-    document.getElementById('statScore').textContent      = score.toFixed(0) + '%';
-    document.getElementById('statBreaks').textContent     = brk.toFixed(1)   + 'm';
-    document.getElementById('statBreakCount').textContent = breakCount        + ' taken';
-    document.getElementById('statAway').textContent       = away.toFixed(1)  + 'm';
-    document.getElementById('progressLabel').textContent  = eff.toFixed(1)   + ' / ' + plan.toFixed(0) + ' min';
-    document.getElementById('progressFill').style.width   = score            + '%';
-  }, 1000);
-
-  // Run detection every 300ms
-  if (_detInterval) clearInterval(_detInterval);
-  _detInterval = setInterval(() => {
-    if (!sessionActive) { clearInterval(_detInterval); return; }
-    runDetection();
-  }, 300);
+  // Detection every 250ms
+  if (detIv) clearInterval(detIv);
+  detIv = setInterval(detect, 250);
 }
 
 // ── End session ────────────────────────────────────────────────────────────────
-function openQuitModal()  { document.getElementById('quitModal').classList.add('visible'); }
-function closeQuitModal() { document.getElementById('quitModal').classList.remove('visible'); }
-async function confirmQuit() { closeQuitModal(); await _endSession(true); }
+function openModal()  { document.getElementById('modal').classList.add('on'); }
+function closeModal() { document.getElementById('modal').classList.remove('on'); }
+function confirmEnd() { closeModal(); endSession(true); }
 
-async function _endSession(early) {
-  if (!sessionActive) return;
-  sessionActive = false;
+async function endSession(early) {
+  if (!active) return;
+  active = false;
 
-  if (countdownTimer)           { clearInterval(countdownTimer); countdownTimer = null; }
-  if (_detInterval)             { clearInterval(_detInterval); _detInterval = null; }
-  if (breakInterval)            { clearInterval(breakInterval); breakInterval = null; }
-  if (window._metricsInterval) { clearInterval(window._metricsInterval); window._metricsInterval = null; }
-  if (window._tickInterval)    { clearInterval(window._tickInterval); window._tickInterval = null; }
+  [tickIv, countdownIv, detIv, breakIv].forEach(iv => iv && clearInterval(iv));
+  tickIv = countdownIv = detIv = breakIv = null;
 
   // Stop camera
-  if (videoStream) {
-    videoStream.getTracks().forEach(t => t.stop());
-    videoStream = null;
-  }
-  document.getElementById('videoEl').style.display    = 'none';
-  document.getElementById('videoEl').srcObject        = null;
+  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+  const vid = document.getElementById('videoEl');
+  vid.srcObject = null; vid.style.display = 'none';
   document.getElementById('camPlaceholder').style.display = 'flex';
-  document.getElementById('musicCard').style.display = 'none';
-  document.getElementById('ytPlayer').src = '';
-  document.getElementById('musicToggle').checked = false;
-  musicEnabled = false;
-  document.getElementById('btnQuit').classList.remove('visible');
 
-  // Build summary
+  // Stop music
+  closeMusic();
+
+  // Clear canvas
+  const canvas = document.getElementById('overlay');
+  if (canvas) canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+
   const plan  = plannedSecs / 60;
   const eff   = effectiveSecs / 60;
-  const away  = awaySecs     / 60;
-  const brk   = breakSecs    / 60;
-  const score = plan > 0 ? Math.min((eff/plan)*100, 100) : 0;
+  const away  = awaySecs / 60;
+  const brk   = breakSecs / 60;
+  const score = plan > 0 ? Math.min(eff/plan*100, 100) : 0;
 
   const summary = {
-    planned_minutes:   Math.round(plan  * 10) / 10,
-    effective_minutes: Math.round(eff   * 10) / 10,
-    away_minutes:      Math.round(away  * 10) / 10,
-    break_minutes:     Math.round(brk   * 10) / 10,
+    planned_minutes:   +plan.toFixed(1),
+    effective_minutes: +eff.toFixed(1),
+    away_minutes:      +away.toFixed(1),
+    break_minutes:     +brk.toFixed(1),
     break_count:       breakCount,
-    focus_score:       Math.round(score * 10) / 10,
-    phone_minutes:     0,
+    focus_score:       +score.toFixed(1),
+    phone_minutes:     0
   };
 
-  // Save to server
   try {
-    await fetch('/api/stop', { method:'POST' });
+    await fetch('/api/stop', {method:'POST'});
     await fetch('/api/save_summary', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify(summary)
@@ -803,47 +760,52 @@ async function _endSession(early) {
 }
 
 function showSummary(s, early) {
-  document.getElementById('trackerGrid').style.display = 'none';
-  document.getElementById('setupCard').style.display   = 'block';
-  document.getElementById('sessionEnd').classList.add('visible');
-  document.getElementById('btnStart').disabled = false;
+  document.getElementById('trackerGrid').style.display  = 'none';
+  document.getElementById('setupCard').style.display    = 'block';
+  document.getElementById('btnStart').disabled          = false;
+  document.getElementById('sessionEnd').classList.add('on');
 
   const score = s.focus_score || 0;
-  document.getElementById('endEffective').textContent = (s.effective_minutes||0).toFixed(1);
-  document.getElementById('endPlanned').textContent   = (s.planned_minutes  ||0).toFixed(0) + ' min';
-  document.getElementById('endBreak').textContent     = (s.break_minutes    ||0).toFixed(1) + ' min';
-  document.getElementById('endAway').textContent      = (s.away_minutes     ||0).toFixed(1) + ' min';
-  document.getElementById('ringScore').textContent    = score.toFixed(0) + '%';
-  document.getElementById('endNote').textContent      = early ? 'Session ended early — data saved.' : "Time\'s up! Great work.";
+  document.getElementById('endEff').textContent   = (s.effective_minutes||0).toFixed(1);
+  document.getElementById('endPlan').textContent  = (s.planned_minutes  ||0).toFixed(0)+' min';
+  document.getElementById('endBreak').textContent = (s.break_minutes    ||0).toFixed(1)+' min';
+  document.getElementById('endAway').textContent  = (s.away_minutes     ||0).toFixed(1)+' min';
+  document.getElementById('ringScore').textContent = score.toFixed(0)+'%';
+  document.getElementById('endNote').textContent  = early ? 'Session ended early — data saved.' : "Time's up! Great work. 🌸";
 
-  const circ   = 339.3;
-  const offset = circ - (score/100) * circ;
-  setTimeout(() => { document.getElementById('scoreRingFill').style.strokeDashoffset = offset; }, 200);
-  const ring = document.getElementById('scoreRingFill');
-  ring.style.stroke = score >= 80 ? 'var(--sage)' : score >= 50 ? 'var(--peach)' : 'var(--rose)';
+  const offset = 339.3 - (score/100)*339.3;
+  setTimeout(() => { document.getElementById('ringFill').style.strokeDashoffset = offset; }, 200);
+  document.getElementById('ringFill').style.stroke = score>=80 ? 'var(--sage2)' : score>=50 ? 'var(--peach)' : 'var(--rose)';
 }
 
 function newSession() {
-  document.getElementById('sessionEnd').classList.remove('visible');
+  document.getElementById('sessionEnd').classList.remove('on');
   document.getElementById('camPlaceholder').style.display = 'flex';
-  document.getElementById('scoreRingFill').style.strokeDashoffset = '339.3';
+  document.getElementById('ringFill').style.strokeDashoffset = '339.3';
   document.getElementById('timerVal').classList.remove('ending');
+  document.getElementById('musicToggle').checked = false;
 }
 
-function toggleMusic() {
-  musicEnabled = document.getElementById('musicToggle').checked;
-  const card   = document.getElementById('musicCard');
-  const iframe = document.getElementById('ytPlayer');
-  if (musicEnabled && sessionActive) {
-    card.style.display = 'block';
-    iframe.src = 'https://www.youtube.com/embed/AawLM81gIHo?autoplay=1&controls=1';
-  } else {
-    card.style.display = 'none';
-    iframe.src = '';
-    document.getElementById('musicToggle').checked = false;
-    musicEnabled = false;
-  }
+// ── Music ──────────────────────────────────────────────────────────────────────
+function closeMusic() {
+  document.getElementById('musicCard').style.display = 'none';
+  document.getElementById('ytFrame').src             = '';
+  document.getElementById('musicToggle').checked     = false;
 }
+
+// Music toggle — works BEFORE and DURING session
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('musicToggle').addEventListener('change', function() {
+    if (!active) return; // only works during session
+    if (this.checked) {
+      document.getElementById('musicCard').style.display = 'block';
+      document.getElementById('ytFrame').src = 'https://www.youtube.com/embed/AawLM81gIHo?autoplay=1&controls=1';
+    } else {
+      closeMusic();
+    }
+  });
+});
 </script>
 </body>
 </html>
+
