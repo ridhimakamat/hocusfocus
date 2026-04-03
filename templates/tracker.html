@@ -418,6 +418,7 @@ function initMP() {
         faceFull = (b.xCenter-b.width/2 > m) && (b.xCenter+b.width/2 < 1-m) &&
                    (b.yCenter-b.height/2 > m) && (b.yCenter+b.height/2 < 1-m);
       }
+      window._lastFaceCheck = Date.now(); // timestamp of last detection run
     });
 
     mpHands = new Hands({
@@ -570,18 +571,27 @@ function endBreakEarly() { finishBreak(); }
 function startTicker() {
   if (tickIv) clearInterval(tickIv);
   lastTick = Date.now();
+  window._lastFaceCheck = Date.now(); // init timestamp
   tickIv = setInterval(() => {
     if (!active) { clearInterval(tickIv); return; }
     const now = Date.now();
     const dt  = (now - lastTick) / 1000;
     lastTick  = now;
+
     if (onBreak) {
       breakSecs += dt;
       if (now >= breakEndTs) finishBreak();
-    } else if (!faceOk || !faceFull) {
-      awaySecs += dt;
     } else {
-      effectiveSecs += dt;
+      // Detection runs every 250ms — if last check was >1.5s ago it's stale
+      const stale = (now - window._lastFaceCheck) > 1500;
+      if (stale) {
+        // Detection not running yet — count as effective
+        effectiveSecs += dt;
+      } else if (!faceOk || !faceFull) {
+        awaySecs += dt;
+      } else {
+        effectiveSecs += dt;
+      }
     }
     updateStats();
   }, 1000);
@@ -688,6 +698,7 @@ async function startSession() {
   } catch(e) {}
 
   active = true;
+  faceOk = false; faceFull = false; // wait for real detection
   document.getElementById('setupCard').style.display    = 'none';
   document.getElementById('trackerGrid').style.display  = 'grid';
   document.getElementById('sessionEnd').classList.remove('on');
@@ -808,4 +819,5 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
