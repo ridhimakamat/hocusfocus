@@ -53,6 +53,8 @@ Hold your hand up to the webcam with fingers extended. The number of fingers you
 
 > Note: The live demo hosts the landing page, sign up, login and session history. The webcam tracker runs locally.
   Note: Copy and paste link in browser to use.
+  Note: >  The live demo is currently unavailable because the hosting service has been discontinued. This repository remains available as a reference for the project's source code, architecture, and implementation. If you'd like to run the project run it locally, follow the setup instructions.
+
 ---
 
 ## Built by
